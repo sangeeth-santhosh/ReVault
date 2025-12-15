@@ -1,11 +1,12 @@
 import { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import useAuth from '../../hooks/useAuth.js';
 import { login as loginService } from '../../services/authService.js';
 
 const Login = () => {
   const { login } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [submitting, setSubmitting] = useState(false);
@@ -19,7 +20,8 @@ const Login = () => {
       const res = await loginService({ email, password });
       if (res?.user && res?.token) {
         login({ user: res.user, token: res.token });
-        navigate('/dashboard');
+        const redirectTo = new URLSearchParams(location.search).get('redirect');
+        navigate(redirectTo || '/browse-items');
       } else {
         setError('Unexpected response from server');
       }

@@ -11,8 +11,9 @@ const AddInventory = () => {
     quantity: '',
     expiry: '',
     condition: '',
-    image: '',
   });
+  const [images, setImages] = useState([]);
+  const [previews, setPreviews] = useState([]);
   const [submitting, setSubmitting] = useState(false);
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
@@ -44,16 +45,19 @@ const AddInventory = () => {
     }
 
     try {
-      const payload = {
-        title: form.name,
-        description: form.description,
-        category: form.category,
-        quantity: Number(form.quantity) || 0,
-        expiry: form.expiry,
-        condition: form.condition,
-        image: form.image,
-      };
-      await inventoryService.add(payload);
+      const formData = new FormData();
+      formData.append('title', form.name);
+      formData.append('description', form.description);
+      formData.append('category', form.category);
+      formData.append('quantity', Number(form.quantity) || 0);
+      formData.append('expiry', form.expiry);
+      formData.append('condition', form.condition);
+
+      images.forEach((file) => {
+        formData.append('images', file);
+      });
+
+      await inventoryService.add(formData);
       setMessage('Listing created successfully');
       setForm({
         name: '',
@@ -62,8 +66,9 @@ const AddInventory = () => {
         quantity: '',
         expiry: '',
         condition: '',
-        image: '',
       });
+      setImages([]);
+      setPreviews([]);
       setTimeout(() => navigate('/inventory/my'), 800);
     } catch (err) {
       setError(err?.message || 'Could not create listing');
@@ -135,15 +140,28 @@ const AddInventory = () => {
           </div>
         </div>
 
-        <div className="space-y-1">
-          <label className="text-sm font-medium text-gray-700">Image URL</label>
+        <div className="space-y-2">
+          <label className="text-sm font-medium text-gray-700">Images (up to 4)</label>
           <input
-            name="image"
-            value={form.image}
-            onChange={handleChange}
-            className="w-full rounded-md border border-gray-200 px-3 py-2 text-sm focus:border-gray-400 focus:outline-none"
-            placeholder="https://..."
+            type="file"
+            accept="image/*"
+            multiple
+            onChange={(e) => {
+              const files = Array.from(e.target.files || []).slice(0, 4);
+              setImages(files);
+              setPreviews(files.map((f) => URL.createObjectURL(f)));
+            }}
+            className="w-full rounded-md border border-gray-200 px-3 py-2 text-sm file:mr-3 file:rounded-md file:border file:border-gray-200 file:bg-gray-50 file:px-3 file:py-1 file:text-sm"
           />
+          {previews.length ? (
+            <div className="flex flex-wrap gap-3">
+              {previews.map((src, idx) => (
+                <div key={src} className="relative h-20 w-20 overflow-hidden rounded-md border border-gray-200">
+                  <img src={src} alt={`preview-${idx}`} className="h-full w-full object-cover" />
+                </div>
+              ))}
+            </div>
+          ) : null}
         </div>
 
         <div className="space-y-1">

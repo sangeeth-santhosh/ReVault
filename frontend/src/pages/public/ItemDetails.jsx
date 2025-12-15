@@ -10,6 +10,7 @@ const ItemDetails = () => {
   const [item, setItem] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [activeImage, setActiveImage] = useState(0);
   const [requesting, setRequesting] = useState(false);
   const [requestMessage, setRequestMessage] = useState('');
   const [requestingError, setRequestingError] = useState('');
@@ -19,7 +20,9 @@ const ItemDetails = () => {
     setError('');
     try {
       const res = await inventoryService.getById(id);
-      setItem(res?.data || null);
+      const data = res?.data || null;
+      setItem(data);
+      setActiveImage(0);
     } catch (err) {
       setError(err?.message || 'Could not load item');
     } finally {
@@ -57,41 +60,73 @@ const ItemDetails = () => {
 
       {item ? (
         <>
-          <div className="flex items-start justify-between gap-6">
-            <div className="space-y-3">
-              <p className="text-sm font-semibold uppercase text-gray-500">Listing</p>
-              <h1 className="text-3xl font-bold text-gray-900">{item.title || item.name}</h1>
-              <p className="text-gray-600">{item.description || 'No description provided.'}</p>
-              <div className="flex flex-wrap gap-2 text-sm text-gray-600">
-                <span className="rounded-full bg-gray-100 px-3 py-1">Qty: {item.quantity ?? '—'} {item.unit || ''}</span>
-                <span className="rounded-full bg-gray-100 px-3 py-1">Location: {item.location || 'N/A'}</span>
-                <span className="rounded-full bg-gray-100 px-3 py-1">Category: {item.category || 'N/A'}</span>
-                {item.condition ? (
-                  <span className="rounded-full bg-gray-100 px-3 py-1">Condition: {item.condition}</span>
-                ) : null}
+          <div className="flex flex-col gap-6 lg:flex-row">
+            <div className="w-full lg:w-1/2">
+              <div className="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm">
+                {item.images?.length ? (
+                  <img
+                    src={item.images[activeImage]}
+                    alt={item.title || 'inventory'}
+                    className="h-80 w-full object-cover"
+                  />
+                ) : (
+                  <div className="flex h-80 items-center justify-center bg-gray-100 text-sm text-gray-500">No images</div>
+                )}
               </div>
+              {item.images?.length ? (
+                <div className="mt-3 flex gap-2 overflow-x-auto pb-1">
+                  {item.images.map((img, idx) => (
+                    <button
+                      key={img}
+                      type="button"
+                      onClick={() => setActiveImage(idx)}
+                      className={`h-16 w-20 flex-shrink-0 overflow-hidden rounded-md border ${
+                        activeImage === idx ? 'border-gray-900' : 'border-gray-200'
+                      }`}
+                    >
+                      <img src={img} alt={`thumb-${idx}`} className="h-full w-full object-cover" />
+                    </button>
+                  ))}
+                </div>
+              ) : null}
             </div>
-            <div className="w-full max-w-xs rounded-xl border border-gray-200 bg-white p-4 shadow-sm">
-              <div className="text-xl font-semibold text-gray-900">{item.price ? `$${item.price}` : 'Price on request'}</div>
-              <p className="text-sm text-gray-600">Contact seller for pricing and availability.</p>
-              {user ? (
-                <button
-                  onClick={handleRequest}
-                  disabled={requesting}
-                  className="mt-4 w-full rounded-lg bg-gray-900 px-4 py-2 text-white hover:bg-gray-800 disabled:opacity-60"
-                >
-                  {requesting ? 'Sending…' : 'Request item'}
-                </button>
-              ) : (
-                <Link
-                  to="/login"
-                  className="mt-4 block w-full rounded-lg bg-gray-900 px-4 py-2 text-center text-white hover:bg-gray-800"
-                >
-                  Login to request
-                </Link>
-              )}
-              {requestMessage ? <p className="mt-2 text-sm text-emerald-700">{requestMessage}</p> : null}
-              {requestingError ? <p className="mt-2 text-sm text-red-600">{requestingError}</p> : null}
+
+            <div className="flex-1 space-y-4">
+              <div className="space-y-3">
+                <p className="text-sm font-semibold uppercase text-gray-500">Listing</p>
+                <h1 className="text-3xl font-bold text-gray-900">{item.title || item.name}</h1>
+                <p className="text-gray-600">{item.description || 'No description provided.'}</p>
+                <div className="flex flex-wrap gap-2 text-sm text-gray-600">
+                  <span className="rounded-full bg-gray-100 px-3 py-1">Qty: {item.quantity ?? '—'} {item.unit || ''}</span>
+                  <span className="rounded-full bg-gray-100 px-3 py-1">Location: {item.location || 'N/A'}</span>
+                  <span className="rounded-full bg-gray-100 px-3 py-1">Category: {item.category || 'N/A'}</span>
+                  {item.condition ? (
+                    <span className="rounded-full bg-gray-100 px-3 py-1">Condition: {item.condition}</span>
+                  ) : null}
+                </div>
+              </div>
+              <div className="w-full max-w-sm rounded-xl border border-gray-200 bg-white p-4 shadow-sm">
+                <div className="text-xl font-semibold text-gray-900">{item.price ? `$${item.price}` : 'Price on request'}</div>
+                <p className="text-sm text-gray-600">Contact seller for pricing and availability.</p>
+                {user ? (
+                  <button
+                    onClick={handleRequest}
+                    disabled={requesting}
+                    className="mt-4 w-full rounded-lg bg-gray-900 px-4 py-2 text-white hover:bg-gray-800 disabled:opacity-60"
+                  >
+                    {requesting ? 'Sending…' : 'Request item'}
+                  </button>
+                ) : (
+                  <Link
+                    to="/login"
+                    className="mt-4 block w-full rounded-lg bg-gray-900 px-4 py-2 text-center text-white hover:bg-gray-800"
+                  >
+                    Login to request
+                  </Link>
+                )}
+                {requestMessage ? <p className="mt-2 text-sm text-emerald-700">{requestMessage}</p> : null}
+                {requestingError ? <p className="mt-2 text-sm text-red-600">{requestingError}</p> : null}
+              </div>
             </div>
           </div>
 

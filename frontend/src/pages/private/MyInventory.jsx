@@ -64,12 +64,21 @@ const MyInventory = () => {
             key={item._id || item.id}
             className="flex flex-col gap-3 rounded-lg border border-gray-200 bg-white p-4 shadow-sm md:flex-row md:items-center md:justify-between"
           >
-            <div>
+            <div className="space-y-2">
               <h3 className="text-lg font-semibold text-gray-900">{item.title || item.name}</h3>
               <p className="text-sm text-gray-600">Category: {item.category || '—'}</p>
               <p className="text-sm text-gray-500">
                 Qty: {item.quantity ?? '—'} {item.unit || ''}
               </p>
+              {item.images?.length ? (
+                <div className="flex gap-2 overflow-x-auto pb-1">
+                  {item.images.map((img) => (
+                    <div key={img} className="h-16 w-20 flex-shrink-0 overflow-hidden rounded-md border border-gray-200">
+                      <img src={img} alt={item.title || 'inventory'} className="h-full w-full object-cover" />
+                    </div>
+                  ))}
+                </div>
+              ) : null}
             </div>
             <div className="flex items-center gap-2 text-sm">
               <span className="rounded-full bg-gray-100 px-3 py-1 text-gray-700">{item.status || 'Active'}</span>

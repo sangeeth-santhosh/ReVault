@@ -44,12 +44,14 @@ const Dashboard = () => {
         id: r._id || r.id,
         title: r.inventory?.title || 'Request',
         detail: r.status || 'pending',
+        image: r.inventory?.images?.[0],
       }));
       const recentListings = listings.slice(0, 3).map((l) => ({
         type: 'listing',
         id: l._id || l.id,
         title: l.title || l.name,
         detail: l.category || 'Listing',
+        image: l.images?.[0],
       }));
       const recentTx = transactions.slice(0, 3).map((t) => ({
         type: 'transaction',
@@ -120,10 +122,17 @@ const Dashboard = () => {
           ) : null}
           <div className="mt-3 space-y-2 text-sm text-gray-700">
             {activity.map((a) => (
-              <div key={a.id} className="rounded-md border border-gray-100 bg-gray-50 px-3 py-2">
-                <div className="text-xs uppercase text-gray-500">{a.type}</div>
-                <div className="font-semibold text-gray-900">{a.title}</div>
-                <div className="text-xs text-gray-600">{a.detail}</div>
+              <div key={a.id} className="flex items-center gap-3 rounded-md border border-gray-100 bg-gray-50 px-3 py-2">
+                {a.image ? (
+                  <div className="h-12 w-12 overflow-hidden rounded-md border border-gray-200">
+                    <img src={a.image} alt={a.title} className="h-full w-full object-cover" />
+                  </div>
+                ) : null}
+                <div>
+                  <div className="text-xs uppercase text-gray-500">{a.type}</div>
+                  <div className="font-semibold text-gray-900">{a.title}</div>
+                  <div className="text-xs text-gray-600">{a.detail}</div>
+                </div>
               </div>
             ))}
           </div>

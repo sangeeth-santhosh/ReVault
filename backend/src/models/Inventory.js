@@ -12,7 +12,7 @@ const inventorySchema = new mongoose.Schema(
     price: { type: Number },
     expiry: { type: String },
     condition: { type: String },
-    image: { type: String },
+    images: [{ type: String }],
     status: { type: String, enum: ['active', 'draft', 'archived'], default: 'active' },
   },
   { timestamps: true }

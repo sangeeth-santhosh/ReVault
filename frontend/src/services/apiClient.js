@@ -14,16 +14,18 @@ const getToken = () => {
 };
 
 const request = async (path, { method = 'GET', body, headers = {} } = {}) => {
-	const token = getToken();
-	const res = await fetch(`${BASE_URL}${path}`, {
-		method,
-		headers: {
-			'Content-Type': 'application/json',
-			...(token ? { Authorization: `Bearer ${token}` } : {}),
-			...headers,
-		},
-		body: body ? JSON.stringify(body) : undefined,
-	});
+ const token = getToken();
+ const isFormData = body instanceof FormData;
+
+ const res = await fetch(`${BASE_URL}${path}`, {
+  method,
+  headers: {
+   ...(isFormData ? {} : { 'Content-Type': 'application/json' }),
+   ...(token ? { Authorization: `Bearer ${token}` } : {}),
+   ...headers,
+  },
+  body: body ? (isFormData ? body : JSON.stringify(body)) : undefined,
+ });
 
 	const data = await res.json().catch(() => ({}));
 	if (!res.ok) {
