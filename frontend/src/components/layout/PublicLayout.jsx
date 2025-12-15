@@ -4,9 +4,9 @@ import Footer from '../Footer.jsx';
 
 const PublicLayout = () => {
   return (
-    <div className="min-h-screen bg-gray-50 text-gray-900">
+    <div className="min-h-screen px-30 bg-gray-50 text-gray-900">
       <Header />
-      <main className="mx-auto max-w-6xl px-4 py-10">
+      <main className="mx-auto mt-12">
         <Outlet />
       </main>
       <Footer />

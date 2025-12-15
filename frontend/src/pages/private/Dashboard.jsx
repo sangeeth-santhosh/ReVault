@@ -88,61 +88,91 @@ const Dashboard = () => {
   ];
 
   return (
-    <section className="space-y-6">
-      <div className="space-y-1">
+    <section className="space-y-8">
+      <div className="flex flex-col gap-2">
         <h1 className="text-2xl font-semibold text-gray-900">Dashboard</h1>
         <p className="text-sm text-gray-600">Overview of your surplus pipeline.</p>
       </div>
 
-      <div className="rounded-lg border border-gray-200 bg-white p-4 shadow-sm">
-        <h2 className="text-lg font-semibold text-gray-900">Welcome back</h2>
-        <p className="mt-1 text-sm text-gray-600">
-          {user?.name ? `Signed in as ${user.name}` : 'Signed in user'}
-          {user?.email ? ` • ${user.email}` : ''}
-        </p>
-        {loading ? <p className="text-sm text-gray-600">Loading overview…</p> : null}
-        {error ? <p className="text-sm text-red-600">{error}</p> : null}
-      </div>
-
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        {cards.map((s) => (
-          <div key={s.label} className="rounded-lg border border-gray-200 bg-white p-4 shadow-sm">
-            <div className="text-2xl font-semibold text-gray-900">{loading ? '—' : s.value}</div>
-            <div className="text-sm text-gray-500">{s.label}</div>
+      <div className="grid gap-6 lg:grid-cols-3">
+        <div className="lg:col-span-2 rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
+          <div className="flex items-start justify-between gap-4">
+            <div>
+              <h2 className="text-lg font-semibold text-gray-900">Welcome back</h2>
+              <p className="mt-1 text-sm text-gray-600">
+                {user?.name ? `Signed in as ${user.name}` : 'Signed in user'}
+                {user?.email ? ` • ${user.email}` : ''}
+              </p>
+            </div>
+            <div className="rounded-lg bg-emerald-50 px-4 py-2 text-xs font-semibold text-emerald-700">
+              {loading ? 'Syncing data…' : 'Up to date'}
+            </div>
           </div>
-        ))}
+          {error ? <p className="mt-3 text-sm text-red-600">{error}</p> : null}
+        </div>
+
+        <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm flex flex-col justify-center">
+          <p className="text-sm text-gray-500 mb-2">Fulfillment rate</p>
+          <div className="text-3xl font-bold text-gray-900">{loading ? '—' : cards.find((c) => c.label === 'Fulfillment rate')?.value}</div>
+          <p className="text-xs text-gray-500 mt-1">Based on completed transactions vs active listings</p>
+        </div>
       </div>
 
-      <div className="grid gap-4 lg:grid-cols-2">
-        <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
-          <h3 className="text-lg font-semibold text-gray-900">Recent activity</h3>
-          {loading ? <p className="mt-2 text-sm text-gray-600">Loading…</p> : null}
+      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+        {cards
+          .filter((c) => c.label !== 'Fulfillment rate')
+          .map((s) => (
+            <div
+              key={s.label}
+              className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm flex flex-col gap-2"
+            >
+              <div className="text-xs font-medium uppercase tracking-wide text-gray-500">{s.label}</div>
+              <div className="text-3xl font-bold text-gray-900">{loading ? '—' : s.value}</div>
+            </div>
+          ))}
+      </div>
+
+      <div className="grid gap-6 lg:grid-cols-3">
+        <div className="lg:col-span-2 rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
+          <div className="flex items-center justify-between">
+            <h3 className="text-lg font-semibold text-gray-900">Recent activity</h3>
+            <span className="text-xs text-gray-500">Last 5 updates</span>
+          </div>
+          {loading ? <p className="mt-3 text-sm text-gray-600">Loading…</p> : null}
           {!loading && !activity.length ? (
-            <p className="mt-2 text-sm text-gray-600">No recent activity yet.</p>
+            <p className="mt-3 text-sm text-gray-600">No recent activity yet.</p>
           ) : null}
-          <div className="mt-3 space-y-2 text-sm text-gray-700">
+          <div className="mt-4 space-y-3 text-sm text-gray-700">
             {activity.map((a) => (
-              <div key={a.id} className="flex items-center gap-3 rounded-md border border-gray-100 bg-gray-50 px-3 py-2">
+              <div
+                key={a.id}
+                className="flex items-center gap-4 rounded-lg border border-gray-100 bg-gray-50 px-4 py-3"
+              >
                 {a.image ? (
                   <div className="h-12 w-12 overflow-hidden rounded-md border border-gray-200">
-                    <img src={a.image} alt={a.title} className="h-full w-full object-cover" />
+                    <img src={a.image} alt={a.title} className="h-full w-full object-cover object-center" />
                   </div>
-                ) : null}
-                <div>
+                ) : (
+                  <div className="h-12 w-12 rounded-md border border-gray-200 bg-white grid place-items-center text-xs text-gray-400">
+                    {a.type}
+                  </div>
+                )}
+                <div className="flex-1 min-w-0">
                   <div className="text-xs uppercase text-gray-500">{a.type}</div>
-                  <div className="font-semibold text-gray-900">{a.title}</div>
+                  <div className="font-semibold text-gray-900 truncate">{a.title}</div>
                   <div className="text-xs text-gray-600">{a.detail}</div>
                 </div>
               </div>
             ))}
           </div>
         </div>
-        <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
+
+        <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
           <h3 className="text-lg font-semibold text-gray-900">Next steps</h3>
-          <div className="mt-3 space-y-2 text-sm text-gray-700">
-            <p>• Add a new listing with clear specs and photos.</p>
-            <p>• Review incoming requests and respond within SLA.</p>
-            <p>• Mark completed deals to track fulfillment.</p>
+          <div className="mt-4 space-y-3 text-sm text-gray-700">
+            <div className="rounded-lg border border-gray-100 bg-gray-50 p-3">Add a new listing with clear specs and photos.</div>
+            <div className="rounded-lg border border-gray-100 bg-gray-50 p-3">Review incoming requests and respond within SLA.</div>
+            <div className="rounded-lg border border-gray-100 bg-gray-50 p-3">Mark completed deals to track fulfillment.</div>
           </div>
         </div>
       </div>

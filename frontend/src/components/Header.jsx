@@ -7,6 +7,7 @@ const navItems = [
   { label: 'Home', to: '/' },
   { label: 'Browse', to: '/browse' },
   { label: 'Contact', to: '/contact' },
+  { label: 'About', to: '/about' },
 ];
 
 const Header = ({ compact = false }) => {
@@ -23,7 +24,7 @@ const Header = ({ compact = false }) => {
 
   if (compact) {
     return (
-      <header className="sticky top-0 z-10 flex h-14 items-center justify-between border-b bg-white/80 px-4 backdrop-blur">
+      <header className="sticky top-0 z-10 flex h-14 items-center justify-between border-b bg-white/80 backdrop-blur">
         <div className="text-sm font-semibold text-gray-800">ReVault</div>
         <div className="relative flex items-center gap-3 text-sm">
           {user ? (
@@ -75,7 +76,7 @@ const Header = ({ compact = false }) => {
   }
 
   return (
-    <header className="flex flex-col gap-6 bg-[#f7f7f7] p-10 px-30 text-sm sm:flex-row sm:items-center sm:justify-between">
+    <header className="flex flex-col gap-6 pt-10 bg-[#f7f7f7] text-sm sm:flex-row sm:items-center sm:justify-between">
       <div className="flex items-center gap-3">
         <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-black font-semibold tracking-tight text-white">RV</div>
         <div>

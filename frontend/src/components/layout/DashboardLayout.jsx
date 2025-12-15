@@ -1,18 +1,19 @@
 import { Outlet } from 'react-router-dom';
-import Sidebar from '../common/Sidebar.jsx';
-import Navbar from '../common/Navbar.jsx';
+import PrivateSidebar from '../ui/privateSidebar.jsx';
+import PrivateHeader from '../ui/privateHeader.jsx';
+import PrivateMain from '../ui/privateMain.jsx';
 
 const DashboardLayout = () => {
   return (
-    <div className="flex min-h-screen bg-gray-50 text-gray-900">
-      <Sidebar />
-      <div className="flex flex-1 flex-col">
-        <Navbar />
-        <main className="flex-1 px-4 py-6">
-          <div className="mx-auto max-w-6xl">
-            <Outlet />
-          </div>
-        </main>
+    <div className="flex min-h-screen">
+      <div className="fixed left-0 top-0 h-screen w-64 overflow-y-auto">
+        <PrivateSidebar />
+      </div>
+      <div className="ml-64 flex flex-col flex-1 min-h-screen">
+        <PrivateHeader />
+        <PrivateMain>
+          <Outlet />
+        </PrivateMain>
       </div>
     </div>
   );

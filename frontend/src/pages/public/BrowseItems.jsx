@@ -55,20 +55,8 @@ const BrowseItems = () => {
   }, [items, sortBy]);
 
   return (
-    <div className="min-h-screen bg-[#f8f8f8] p-4 sm:p-6 lg:p-8">
-      <div className="max-w-7xl mx-auto bg-white shadow-lg rounded-xl p-6 sm:p-8">
-        <div className="text-sm breadcrumbs mb-6 text-gray-500 flex items-center justify-between border-b pb-4">
-          <span className="space-x-1">
-            <Link to="/" className="hover:text-black">Home</Link>
-            <span className="mx-1">/</span>
-            <span className="font-medium text-black">Shop</span>
-          </span>
-          <div className="text-gray-700 text-xs flex items-center space-x-2">
-            <span className="font-bold text-black border-2 border-black p-1 rounded-sm text-xs">GRID</span>
-            <span className="text-gray-500 p-1 text-xs">LIST</span>
-          </div>
-        </div>
-
+    <div className="min-h-screen">
+      <div className="mx-auto">
         {loading ? <p className="text-sm text-gray-600">Loading…</p> : null}
         {error ? <p className="text-sm text-red-600">{error}</p> : null}
         {!loading && !sortedItems.length ? (
@@ -110,12 +98,12 @@ const BrowseItems = () => {
                         <span className="bg-red-500 text-white text-[10px] font-semibold px-1.5 py-0.5 rounded-sm uppercase">Sale</span>
                       </div>
                     ) : null}
-                    <div className="aspect-h-1 aspect-w-1 w-full overflow-hidden bg-gray-100 rounded-md">
+                    <div className="w-full h-48 overflow-hidden bg-gray-100 rounded-md">
                       <Link to={`/items/${item._id || item.id}`}>
                         <img
                           src={imageSrc}
                           alt={`${name} product image`}
-                          className="h-full w-full object-cover object-center group-hover:opacity-75 transition-opacity duration-300"
+                          className="w-full h-full object-cover object-center rounded-md group-hover:opacity-75 transition-opacity duration-300"
                         />
                       </Link>
                     </div>

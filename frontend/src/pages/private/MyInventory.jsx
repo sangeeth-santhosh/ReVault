@@ -73,8 +73,8 @@ const MyInventory = () => {
               {item.images?.length ? (
                 <div className="flex gap-2 overflow-x-auto pb-1">
                   {item.images.map((img) => (
-                    <div key={img} className="h-16 w-20 flex-shrink-0 overflow-hidden rounded-md border border-gray-200">
-                      <img src={img} alt={item.title || 'inventory'} className="h-full w-full object-cover" />
+                    <div key={img} className="h-20 w-20 flex-shrink-0 overflow-hidden rounded-md border border-gray-200">
+                      <img src={img} alt={item.title || 'inventory'} className="w-full h-full object-cover object-center" />
                     </div>
                   ))}
                 </div>
