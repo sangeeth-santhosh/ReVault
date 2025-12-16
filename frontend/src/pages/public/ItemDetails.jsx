@@ -124,7 +124,7 @@ const ItemDetails = () => {
 
                 {item.images?.length ? (
                   <div className="flex space-x-4">
-                    {item.images.slice(0, 3).map((img, idx) => (
+                    {item.images.slice(0, 4).map((img, idx) => (
                       <button
                         key={img}
                         type="button"
