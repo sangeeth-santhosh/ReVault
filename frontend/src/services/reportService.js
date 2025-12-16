@@ -22,24 +22,38 @@ const authHeaders = () => {
 
 export const getSummary = () => apiClient.get('/reports/summary');
 
-export const downloadCsv = async () => {
-  const res = await fetch(`${BASE_URL}/reports/transactions/csv`, {
+export const getInventoryReport = () => apiClient.get('/reports/inventory');
+export const getCompletedTransactionsReport = () => apiClient.get('/reports/completed-transactions');
+export const getQuantityTransferredReport = () => apiClient.get('/reports/quantity-transferred');
+
+const fetchBlob = async (path) => {
+  const res = await fetch(`${BASE_URL}${path}`, {
     headers: { ...authHeaders() },
   });
   if (!res.ok) {
-    throw new Error('Could not download CSV');
+    throw new Error('Could not download report');
   }
   return res.blob();
 };
 
-export const downloadPdf = async () => {
-  const res = await fetch(`${BASE_URL}/reports/transactions/pdf`, {
-    headers: { ...authHeaders() },
-  });
-  if (!res.ok) {
-    throw new Error('Could not download PDF');
-  }
-  return res.blob();
-};
+export const downloadInventoryCsv = () => fetchBlob('/reports/inventory/csv');
+export const downloadInventoryPdf = () => fetchBlob('/reports/inventory/pdf');
 
-export default { getSummary, downloadCsv, downloadPdf };
+export const downloadCompletedTransactionsCsv = () => fetchBlob('/reports/completed-transactions/csv');
+export const downloadCompletedTransactionsPdf = () => fetchBlob('/reports/completed-transactions/pdf');
+
+export const downloadQuantityTransferredCsv = () => fetchBlob('/reports/quantity-transferred/csv');
+export const downloadQuantityTransferredPdf = () => fetchBlob('/reports/quantity-transferred/pdf');
+
+export default {
+  getSummary,
+  getInventoryReport,
+  getCompletedTransactionsReport,
+  getQuantityTransferredReport,
+  downloadInventoryCsv,
+  downloadInventoryPdf,
+  downloadCompletedTransactionsCsv,
+  downloadCompletedTransactionsPdf,
+  downloadQuantityTransferredCsv,
+  downloadQuantityTransferredPdf,
+};
