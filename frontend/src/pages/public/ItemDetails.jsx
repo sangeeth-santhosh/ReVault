@@ -109,7 +109,7 @@ const ItemDetails = () => {
               <div className="mb-8 lg:mb-0">
                 <div className="w-full bg-neutral-100 rounded-xl mb-4 overflow-hidden shadow-lg border border-neutral-200 aspect-[1/1] lg:aspect-[4/3] flex items-center justify-center">
                   {mainImage ? (
-                    <img src={mainImage} alt={item.title || item.name} className="w-full h-full object-cover object-center" />
+                    <img src={mainImage} alt={item.title || item.name} className="w-full h-full object-contain object-center" />
                   ) : (
                     <div className="p-16 w-full h-full flex items-center justify-center">
                       <div
@@ -133,7 +133,7 @@ const ItemDetails = () => {
                           activeImage === idx ? 'border-2 border-black' : 'border border-neutral-200'
                         }`}
                       >
-                        <img src={img} alt={`thumb-${idx}`} className="w-full h-full object-cover object-center" />
+                        <img src={img} alt={`thumb-${idx}`} className="w-full h-full object-contain object-center" />
                       </button>
                     ))}
                   </div>
