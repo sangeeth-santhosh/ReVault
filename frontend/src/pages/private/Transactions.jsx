@@ -50,7 +50,6 @@ const Transactions = () => {
           <table className="min-w-full text-sm">
             <thead className="bg-gray-50 text-left text-gray-700">
               <tr>
-                <th className="px-4 py-3">ID</th>
                 <th className="px-4 py-3">Item</th>
                 <th className="px-4 py-3">Role</th>
                 <th className="px-4 py-3">Value</th>
@@ -60,7 +59,6 @@ const Transactions = () => {
             <tbody className="divide-y divide-gray-200 text-gray-800">
               {transactions.map((tx) => (
                 <tr key={tx._id || tx.id}>
-                  <td className="px-4 py-3">{tx._id || tx.id}</td>
                   <td className="px-4 py-3">{tx.request?.inventory?.title || tx.item || tx.inventoryTitle || 'Item'}</td>
                   <td className="px-4 py-3">{
                     String(tx.buyer) === String(user?.id)

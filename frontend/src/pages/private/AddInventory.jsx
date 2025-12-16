@@ -213,7 +213,7 @@ const AddInventory = () => {
                   </>
                 ) : (
                   <div className="flex flex-col items-center gap-1">
-                    <p className="text-sm font-medium text-gray-700">Slot {idx + 1}</p>
+                    <p className="text-sm font-medium text-gray-700">Image {idx + 1}</p>
                     <p className="text-xs text-gray-500">Drag & drop or click</p>
                   </div>
                 )}

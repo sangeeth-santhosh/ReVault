@@ -45,7 +45,6 @@ const MyRequests = () => {
           <article key={req._id || req.id} className="rounded-lg border border-gray-200 bg-white p-4 shadow-sm">
             <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
               <div>
-                <p className="text-sm text-gray-500">{req._id || req.id}</p>
                 <h3 className="text-lg font-semibold text-gray-900">{req.inventory?.title || req.item || 'Requested item'}</h3>
                 <p className="text-sm text-gray-600">Seller: {req.seller?.name || req.to || 'Seller'}</p>
               </div>

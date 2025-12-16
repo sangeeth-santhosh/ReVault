@@ -94,7 +94,6 @@ const Chats = () => {
                 }`}
               >
                 <div className="font-semibold text-gray-900">{t.buyer?.name || t.seller?.name || 'Counterparty'}</div>
-                <div className="text-xs text-gray-500">{id}</div>
                 <div className="text-xs text-gray-600">Status: {t.status || 'pending'}</div>
               </button>
             );
@@ -109,7 +108,6 @@ const Chats = () => {
           <>
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-xs uppercase text-gray-500">{selectedId}</p>
                 <h3 className="text-lg font-semibold text-gray-900">
                   {activeThread?.buyer?.name || activeThread?.seller?.name || 'Chat'}
                 </h3>
