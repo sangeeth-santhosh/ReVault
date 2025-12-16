@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import inventoryService from '../../services/inventoryService.js';
 
@@ -12,14 +12,50 @@ const AddInventory = () => {
     expiry: '',
     condition: '',
   });
-  const [images, setImages] = useState([]);
-  const [previews, setPreviews] = useState([]);
+  const [images, setImages] = useState(Array(4).fill(null));
+  const [previews, setPreviews] = useState(Array(4).fill(null));
   const [submitting, setSubmitting] = useState(false);
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
+  const fileInputsRef = useRef([]);
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
+  };
+
+  const handleSlotFiles = (fileList, slotIndex) => {
+    if (!fileList) return;
+    const firstImage = Array.from(fileList).find((file) => file.type.startsWith('image/'));
+    if (!firstImage) return;
+
+    setError('');
+
+    setImages((prev) => {
+      const next = [...prev];
+      next[slotIndex] = firstImage;
+      return next;
+    });
+
+    setPreviews((prev) => {
+      const next = [...prev];
+      if (next[slotIndex]) URL.revokeObjectURL(next[slotIndex]);
+      next[slotIndex] = URL.createObjectURL(firstImage);
+      return next;
+    });
+  };
+
+  const handleRemoveImage = (index) => {
+    setImages((prev) => {
+      const next = [...prev];
+      next[index] = null;
+      return next;
+    });
+    setPreviews((prev) => {
+      const next = [...prev];
+      if (next[index]) URL.revokeObjectURL(next[index]);
+      next[index] = null;
+      return next;
+    });
   };
 
   const handleSubmit = async (e) => {
@@ -53,7 +89,7 @@ const AddInventory = () => {
       formData.append('expiry', form.expiry);
       formData.append('condition', form.condition);
 
-      images.forEach((file) => {
+      images.filter(Boolean).forEach((file) => {
         formData.append('images', file);
       });
 
@@ -67,8 +103,11 @@ const AddInventory = () => {
         expiry: '',
         condition: '',
       });
-      setImages([]);
-      setPreviews([]);
+      images.forEach((file, idx) => {
+        if (previews[idx]) URL.revokeObjectURL(previews[idx]);
+      });
+      setImages(Array(4).fill(null));
+      setPreviews(Array(4).fill(null));
       setTimeout(() => navigate('/inventory/my'), 800);
     } catch (err) {
       setError(err?.message || 'Could not create listing');
@@ -142,26 +181,56 @@ const AddInventory = () => {
 
         <div className="space-y-2">
           <label className="text-sm font-medium text-gray-700">Images (up to 4)</label>
-          <input
-            type="file"
-            accept="image/*"
-            multiple
-            onChange={(e) => {
-              const files = Array.from(e.target.files || []).slice(0, 4);
-              setImages(files);
-              setPreviews(files.map((f) => URL.createObjectURL(f)));
-            }}
-            className="w-full rounded-md border border-gray-200 px-3 py-2 text-sm file:mr-3 file:rounded-md file:border file:border-gray-200 file:bg-gray-50 file:px-3 file:py-1 file:text-sm"
-          />
-          {previews.length ? (
-            <div className="flex flex-wrap gap-3">
-              {previews.map((src, idx) => (
-                <div key={src} className="relative h-20 w-20 overflow-hidden rounded-md border border-gray-200">
-                  <img src={src} alt={`preview-${idx}`} className="h-full w-full object-cover" />
-                </div>
-              ))}
-            </div>
-          ) : null}
+
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+            {[0, 1, 2, 3].map((idx) => (
+              <div
+                key={idx}
+                className="relative flex h-32 w-full cursor-pointer flex-col items-center justify-center rounded-lg border-2 border-dashed border-gray-300 bg-gray-50 text-center transition hover:border-emerald-500 hover:bg-emerald-50/60"
+                onDragOver={(e) => {
+                  e.preventDefault();
+                }}
+                onDrop={(e) => {
+                  e.preventDefault();
+                  handleSlotFiles(e.dataTransfer.files, idx);
+                }}
+                onClick={() => fileInputsRef.current[idx]?.click()}
+              >
+                {previews[idx] ? (
+                  <>
+                    <img src={previews[idx]} alt={`preview-${idx}`} className="h-full w-full object-cover rounded-md" />
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleRemoveImage(idx);
+                      }}
+                      className="absolute right-1 top-1 rounded-full bg-white/90 p-1 text-xs text-gray-600 shadow hover:bg-red-50 hover:text-red-600"
+                      aria-label="Remove image"
+                    >
+                      ❌
+                    </button>
+                  </>
+                ) : (
+                  <div className="flex flex-col items-center gap-1">
+                    <p className="text-sm font-medium text-gray-700">Slot {idx + 1}</p>
+                    <p className="text-xs text-gray-500">Drag & drop or click</p>
+                  </div>
+                )}
+
+                <input
+                  ref={(el) => (fileInputsRef.current[idx] = el)}
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={(e) => {
+                    handleSlotFiles(e.target.files, idx);
+                    e.target.value = '';
+                  }}
+                />
+              </div>
+            ))}
+          </div>
         </div>
 
         <div className="space-y-1">

@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import images from "../../assets/assets.js";
+import Images from "../../assets/Images.js";
 
 const AdminSidebar = () => {
   const location = useLocation();
@@ -18,23 +18,26 @@ const AdminSidebar = () => {
     { to: "/dashboard", label: "Dashboard", key: "dashboard" },
     { to: "/inventory/add", label: "Add Inventory", key: "addInventory" },
     { to: "/inventory/my", label: "My Inventory", key: "myInventory" },
-    { to: "/requests/incoming", label: "Incoming Requests", key: "incomingRequests" },
+    {
+      to: "/requests/incoming",
+      label: "Incoming Requests",
+      key: "incomingRequests",
+    },
     { to: "/requests/my", label: "My Requests", key: "myRequests" },
     { to: "/chats", label: "Chats", key: "chats" },
     { to: "/transactions", label: "Transactions", key: "transactions" },
     { to: "/reports", label: "Reports", key: "reports" },
-    { to: "/settings", label: "Settings", key: "settings" },
   ];
 
   return (
     <aside className={asideClass}>
       {/* Logo (Dark version, now styled differently as per the image) */}
-      <div className="px-9 pt-6 pb-6 flex items-center gap-3">
-        <div className="w-8 h-8 rounded-full bg-emerald-500 flex items-center justify-center">
+      <div className="px-8 pt-6 pb-3 flex items-center gap-3">
+        <div className="">
           <img
-            src={images}
+            src={Images.Logo1}
             alt="Logo"
-            className="w-10 h-10 rounded-full bg-emerald-500"
+            className="w-10 h-10 rounded-2xl bg-emerald-500"
           />
         </div>
         <div>
@@ -51,7 +54,9 @@ const AdminSidebar = () => {
                 to={link.to}
                 onClick={() => setActiveItem(link.key)}
                 className={`${baseBtn} ${
-                  location.pathname === link.to ? activeClasses : inactiveClasses
+                  location.pathname === link.to
+                    ? activeClasses
+                    : inactiveClasses
                 }`}
               >
                 {/* Preserve existing icon markup */}
@@ -197,7 +202,7 @@ const AdminSidebar = () => {
             <circle cx="12" cy="12" r="3" />
             <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82-.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0-.33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0 .33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z" />
           </svg>
-          Settings
+          <Link to="/settings">Settings</Link>
         </button>
         <button
           onClick={() => {
