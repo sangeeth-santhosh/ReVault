@@ -80,6 +80,9 @@ const IncomingRequests = () => {
                 </button>
               </div>
             </div>
+            {['accepted', 'completed'].includes(req.status) ? null : (
+              <p className="mt-2 text-xs text-gray-600">Chat available after request is accepted</p>
+            )}
           </article>
         ))}
       </div>

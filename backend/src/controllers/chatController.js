@@ -17,6 +17,11 @@ export const sendMessage = async (req, res) => {
       return res.status(403).json({ success: false, message: 'Not a participant in this request' });
     }
 
+    const isChatAllowed = ['accepted', 'completed'].includes(request.status);
+    if (!isChatAllowed) {
+      return res.status(403).json({ success: false, message: 'Chat available after request is accepted' });
+    }
+
     if (!text) {
       return res.status(400).json({ success: false, message: 'Message body required' });
     }

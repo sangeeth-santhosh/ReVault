@@ -1,3 +1,4 @@
+import mongoose from 'mongoose';
 import Request from '../models/Request.js';
 import Inventory from '../models/Inventory.js';
 import Transaction from '../models/Transaction.js';
@@ -60,17 +61,6 @@ const updateStatus = async (req, res, status) => {
     request.status = status;
     await request.save();
 
-    if (status === 'completed') {
-      await Transaction.create({
-        request: request._id,
-        buyer: request.buyer,
-        seller: request.seller,
-        amount: req.body?.amount || 0,
-        // simple value using inventory price if available
-        value: request.inventory?.price,
-      });
-    }
-
     return res.json({ success: true, data: request });
   } catch (err) {
     console.error(`updateStatus ${status} error`, err);
@@ -80,7 +70,78 @@ const updateStatus = async (req, res, status) => {
 
 export const acceptRequest = (req, res) => updateStatus(req, res, 'accepted');
 export const rejectRequest = (req, res) => updateStatus(req, res, 'rejected');
-export const completeRequest = (req, res) => updateStatus(req, res, 'completed');
+
+export const completeRequest = async (req, res) => {
+  const session = await mongoose.startSession();
+  try {
+    session.startTransaction();
+    const request = await Request.findOne({ _id: req.params.id, seller: req.user._id })
+      .populate('inventory')
+      .session(session);
+
+    if (!request) {
+      await session.abortTransaction();
+      return res.status(404).json({ success: false, message: 'Request not found' });
+    }
+
+    if (request.status === 'completed') {
+      await session.abortTransaction();
+      return res.status(409).json({ success: false, message: 'Request already completed' });
+    }
+
+    if (request.status !== 'accepted') {
+      await session.abortTransaction();
+      return res.status(403).json({ success: false, message: 'Only accepted requests can be completed' });
+    }
+
+    if (!request.inventory) {
+      await session.abortTransaction();
+      return res.status(400).json({ success: false, message: 'Inventory not found for this request' });
+    }
+
+    const existingTx = await Transaction.findOne({ request: request._id }).session(session);
+    if (existingTx) {
+      await session.abortTransaction();
+      return res.status(409).json({ success: false, message: 'Transaction already exists for this request' });
+    }
+
+    const requestedQty = request.quantity || 0;
+    if (request.inventory.quantity < requestedQty) {
+      await session.abortTransaction();
+      return res.status(400).json({ success: false, message: 'Insufficient inventory quantity to complete request' });
+    }
+
+    request.inventory.quantity = request.inventory.quantity - requestedQty;
+    await request.inventory.save({ session });
+
+    const [transaction] = await Transaction.create(
+      [
+        {
+          request: request._id,
+          buyer: request.buyer,
+          seller: request.seller,
+          amount: req.body?.amount || requestedQty || 0,
+          value: request.inventory?.price,
+          quantity: requestedQty,
+          status: 'completed',
+        },
+      ],
+      { session }
+    );
+
+    request.status = 'completed';
+    await request.save({ session });
+
+    await session.commitTransaction();
+    return res.json({ success: true, data: request, transaction });
+  } catch (err) {
+    await session.abortTransaction();
+    console.error('completeRequest error', err);
+    return res.status(500).json({ success: false, message: 'Could not complete request' });
+  } finally {
+    session.endSession();
+  }
+};
 
 export default {
   sendRequest,

@@ -3,6 +3,7 @@ import useAuth from '../../hooks/useAuth.js';
 import inventoryService from '../../services/inventoryService.js';
 import requestService from '../../services/requestService.js';
 import transactionService from '../../services/transactionService.js';
+import reportService from '../../services/reportService.js';
 
 const Dashboard = () => {
   const { user } = useAuth();
@@ -15,12 +16,13 @@ const Dashboard = () => {
     setLoading(true);
     setError('');
     try {
-      const [invRes, incRes, outRes, txBuyerRes, txSellerRes] = await Promise.all([
+      const [invRes, incRes, outRes, txBuyerRes, txSellerRes, reportsSummary] = await Promise.all([
         inventoryService.getMine(),
         requestService.getIncoming(),
         requestService.getMine(),
         transactionService.getMy(),
         transactionService.getSeller(),
+        reportService.getSummary(),
       ]);
 
       const listings = invRes?.data || [];
@@ -31,12 +33,13 @@ const Dashboard = () => {
         (tx, idx, arr) => arr.findIndex((t) => (t._id || t.id) === (tx._id || tx.id)) === idx
       );
       const completed = transactions.filter((t) => t.status === 'completed');
+      const summaryData = reportsSummary?.data || {};
 
       setStats({
-        listings: listings.length,
+        listings: summaryData.totalInventoryPosted ?? listings.length,
         incoming: incoming.length,
         outgoing: outgoing.length,
-        completed: completed.length,
+        completed: summaryData.totalCompletedTransactions ?? completed.length,
       });
 
       const recentRequests = incoming.slice(0, 3).map((r) => ({

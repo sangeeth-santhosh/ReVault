@@ -79,7 +79,7 @@ const Register = () => {
           />
         </div>
         <div className="space-y-1">
-          <label className="text-sm font-medium text-gray-700">Contact name</label>
+          <label className="text-sm font-medium text-gray-700">User name</label>
           <input
             name="name"
             value={form.name}

@@ -50,12 +50,16 @@ const MyRequests = () => {
               </div>
               <div className="flex flex-wrap items-center gap-2 text-sm">
                 <span className="rounded-full bg-gray-100 px-3 py-1 text-gray-700">{req.status || 'pending'}</span>
-                <Link
-                  to={`/chats?requestId=${req._id || req.id}`}
-                  className="rounded-md border border-gray-200 px-3 py-1 hover:border-gray-300"
-                >
-                  Open chat
-                </Link>
+                {['accepted', 'completed'].includes(req.status) ? (
+                  <Link
+                    to={`/chats?requestId=${req._id || req.id}`}
+                    className="rounded-md border border-gray-200 px-3 py-1 hover:border-gray-300"
+                  >
+                    Open chat
+                  </Link>
+                ) : (
+                  <span className="text-xs text-gray-600">Chat available after request is accepted</span>
+                )}
               </div>
             </div>
           </article>

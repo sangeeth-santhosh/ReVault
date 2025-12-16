@@ -59,7 +59,7 @@ const Chats = () => {
 
   const handleSend = async (e) => {
     e.preventDefault();
-    if (!selectedId || !messageInput.trim()) return;
+    if (!selectedId || !messageInput.trim() || !chatAllowed) return;
     try {
       await chatService.sendMessage({ requestId: selectedId, content: messageInput.trim() });
       setMessageInput('');
@@ -70,6 +70,7 @@ const Chats = () => {
   };
 
   const activeThread = threads.find((t) => (t._id || t.id) === selectedId);
+  const chatAllowed = ['accepted', 'completed'].includes(activeThread?.status);
 
   return (
     <section className="grid gap-4 md:grid-cols-[320px_1fr]">
@@ -122,6 +123,9 @@ const Chats = () => {
 
             {loadingMessages ? <p className="mt-3 text-sm text-gray-600">Loading messages…</p> : null}
             {error ? <p className="mt-2 text-sm text-red-600">{error}</p> : null}
+            {!chatAllowed ? (
+              <p className="mt-2 text-sm text-gray-600">Chat available after request is accepted</p>
+            ) : null}
 
             <div className="mt-4 h-64 space-y-3 overflow-y-auto rounded-md bg-gray-50 p-3 text-sm text-gray-700">
               {!loadingMessages && !messages.length ? (
@@ -141,11 +145,12 @@ const Chats = () => {
                 placeholder="Type a message"
                 value={messageInput}
                 onChange={(e) => setMessageInput(e.target.value)}
+                disabled={!chatAllowed}
               />
               <button
                 type="submit"
                 className="rounded-md bg-gray-900 px-4 py-2 text-white hover:bg-gray-800 disabled:opacity-60"
-                disabled={!messageInput.trim()}
+                disabled={!chatAllowed || !messageInput.trim()}
               >
                 Send
               </button>

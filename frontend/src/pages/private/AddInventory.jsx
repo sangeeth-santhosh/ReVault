@@ -180,7 +180,7 @@ const AddInventory = () => {
         </div>
 
         <div className="space-y-2">
-          <label className="text-sm font-medium text-gray-700">Images (up to 4)</label>
+          <label className="text-sm font-medium text-gray-700">Images</label>
 
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
             {[0, 1, 2, 3].map((idx) => (

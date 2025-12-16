@@ -8,6 +8,7 @@ import requestRoutes from './routes/requestRoutes.js';
 import chatRoutes from './routes/chatRoutes.js';
 import transactionRoutes from './routes/transactionRoutes.js';
 import adminRoutes from './routes/adminRoutes.js';
+import reportRoutes from './routes/reportRoutes.js';
 
 // Initialize Express app
 const app = express();
@@ -36,6 +37,7 @@ app.use('/request', requestRoutes);
 app.use('/chat', chatRoutes);
 app.use('/transactions', transactionRoutes);
 app.use('/admin', adminRoutes);
+app.use('/reports', reportRoutes);
 
 // 404 handler
 app.use((req, res) => {

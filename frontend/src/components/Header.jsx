@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import useAuth from '../hooks/useAuth.js';
 
@@ -14,25 +14,47 @@ const Header = ({ compact = false }) => {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
   const [open, setOpen] = useState(false);
+  const menuRef = useRef(null);
+
+  const initials = (user?.name || 'User')
+    .split(' ')
+    .map((n) => n[0])
+    .join('')
+    .slice(0, 2)
+    .toUpperCase();
 
   const handleLogout = () => {
     logout();
+    setOpen(false);
     navigate('/');
   };
 
   const close = () => setOpen(false);
 
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (menuRef.current && !menuRef.current.contains(event.target)) {
+        setOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
   if (compact) {
     return (
       <header className="sticky top-0 z-10 flex h-14 items-center justify-between border-b bg-white/80 backdrop-blur">
         <div className="text-sm font-semibold text-gray-800">ReVault</div>
-        <div className="relative flex items-center gap-3 text-sm">
+        <div className="relative flex items-center gap-3 text-sm" ref={menuRef}>
           {user ? (
             <div className="relative">
               <button
                 onClick={() => setOpen((v) => !v)}
                 className="flex items-center gap-2 rounded-md border border-gray-200 bg-white px-3 py-1 text-gray-800 shadow-sm hover:border-gray-300"
               >
+                <span className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-gray-900 text-xs font-semibold text-white">
+                  {initials}
+                </span>
                 <span className="font-medium">{user.name || 'Profile'}</span>
                 <span className="text-gray-500">▾</span>
               </button>
@@ -96,13 +118,16 @@ const Header = ({ compact = false }) => {
         ))}
       </nav>
 
-      <div className="relative flex items-center gap-3">
+      <div className="relative flex items-center gap-3" ref={menuRef}>
         {user ? (
           <div className="relative">
             <button
               onClick={() => setOpen((v) => !v)}
               className="flex items-center gap-2 rounded-full bg-[#0f172a] px-4 py-2 text-white shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
             >
+              <span className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-white/10 text-xs font-semibold text-white">
+                {initials}
+              </span>
               <span className="font-semibold">{user.name || 'Profile'}</span>
               <span className="text-sm text-gray-200">▾</span>
             </button>
