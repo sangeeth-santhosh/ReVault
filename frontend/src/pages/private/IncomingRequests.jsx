@@ -62,18 +62,21 @@ const IncomingRequests = () => {
                 <span className="rounded-full bg-gray-100 px-3 py-1 text-gray-700">{req.status || 'pending'}</span>
                 <button
                   onClick={() => updateStatus(req._id || req.id, 'accept')}
+                  disabled={(req.status || 'pending') !== 'pending'}
                   className="rounded-md border border-gray-200 px-3 py-1 hover:border-gray-300"
                 >
                   Accept
                 </button>
                 <button
                   onClick={() => updateStatus(req._id || req.id, 'reject')}
+                  disabled={(req.status || 'pending') !== 'pending'}
                   className="rounded-md border border-gray-200 px-3 py-1 hover:border-gray-300"
                 >
                   Reject
                 </button>
                 <button
                   onClick={() => updateStatus(req._id || req.id, 'complete')}
+                  disabled={(req.status || 'pending') !== 'accepted'}
                   className="rounded-md border border-gray-200 px-3 py-1 hover:border-gray-300"
                 >
                   Complete

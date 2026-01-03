@@ -48,6 +48,11 @@ export const getChatByRequest = async (req, res) => {
       return res.status(403).json({ success: false, message: 'Not a participant in this request' });
     }
 
+    const isChatAllowed = ['accepted', 'completed'].includes(request.status);
+    if (!isChatAllowed) {
+      return res.status(403).json({ success: false, message: 'Chat available after request is accepted' });
+    }
+
     const messages = await Message.find({ request: req.params.requestId })
       .populate('sender', 'name email')
       .sort({ createdAt: 1 });

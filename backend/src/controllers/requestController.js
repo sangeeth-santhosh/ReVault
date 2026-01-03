@@ -5,17 +5,31 @@ import Transaction from '../models/Transaction.js';
 
 export const sendRequest = async (req, res) => {
   try {
-    const { inventoryId, quantity, message } = req.body;
+    const { inventoryId, quantity, requestedQuantity, message } = req.body;
     const inventory = await Inventory.findById(inventoryId);
     if (!inventory) {
       return res.status(404).json({ success: false, message: 'Inventory not found' });
+    }
+
+    const errorMessage = 'requestedQuantity must be a positive number and within available inventory';
+    if (requestedQuantity === undefined || requestedQuantity === null || requestedQuantity === '') {
+      return res.status(400).json({ success: false, message: errorMessage });
+    }
+
+    const parsedQty = Number(requestedQuantity);
+    if (!Number.isFinite(parsedQty) || parsedQty <= 0) {
+      return res.status(400).json({ success: false, message: errorMessage });
+    }
+    if (Number.isFinite(inventory.quantity) && parsedQty > inventory.quantity) {
+      return res.status(400).json({ success: false, message: errorMessage });
     }
 
     const request = await Request.create({
       inventory: inventoryId,
       buyer: req.user._id,
       seller: inventory.owner,
-      quantity,
+      quantity: parsedQty,
+      requestedQuantity: parsedQty,
       message,
     });
 
@@ -105,14 +119,38 @@ export const completeRequest = async (req, res) => {
       return res.status(409).json({ success: false, message: 'Transaction already exists for this request' });
     }
 
-    const requestedQty = request.quantity || 0;
-    if (request.inventory.quantity < requestedQty) {
+    const rqQty = Number.isFinite(request.requestedQuantity) ? request.requestedQuantity : null;
+    const legacyQty = Number.isFinite(request.quantity) ? request.quantity : null;
+    const inventoryQty = Number.isFinite(request.inventory.quantity) ? request.inventory.quantity : 0;
+    const transferQty = rqQty && rqQty > 0 ? rqQty : legacyQty && legacyQty > 0 ? legacyQty : inventoryQty;
+
+    if (transferQty <= 0) {
       await session.abortTransaction();
       return res.status(400).json({ success: false, message: 'Insufficient inventory quantity to complete request' });
     }
 
-    request.inventory.quantity = request.inventory.quantity - requestedQty;
-    await request.inventory.save({ session });
+    // Guard against concurrent double-complete by flipping status conditionally inside the transaction.
+    const statusUpdate = await Request.updateOne(
+      { _id: request._id, seller: req.user._id, status: 'accepted' },
+      { $set: { status: 'completed' } },
+      { session }
+    );
+    if (statusUpdate.modifiedCount !== 1) {
+      await session.abortTransaction();
+      return res.status(409).json({ success: false, message: 'Request already completed' });
+    }
+    request.status = 'completed';
+
+    const inventoryUpdate = await Inventory.updateOne(
+      { _id: request.inventory._id, quantity: { $gte: transferQty } },
+      { $inc: { quantity: -transferQty } },
+      { session }
+    );
+
+    if (inventoryUpdate.modifiedCount !== 1) {
+      await session.abortTransaction();
+      return res.status(400).json({ success: false, message: 'Insufficient inventory quantity to complete request' });
+    }
 
     const [transaction] = await Transaction.create(
       [
@@ -120,17 +158,14 @@ export const completeRequest = async (req, res) => {
           request: request._id,
           buyer: request.buyer,
           seller: request.seller,
-          amount: req.body?.amount || requestedQty || 0,
+          amount: req.body?.amount || transferQty || 0,
           value: request.inventory?.price,
-          quantity: requestedQty,
+          quantity: transferQty,
           status: 'completed',
         },
       ],
       { session }
     );
-
-    request.status = 'completed';
-    await request.save({ session });
 
     await session.commitTransaction();
     return res.json({ success: true, data: request, transaction });

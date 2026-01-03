@@ -6,6 +6,12 @@ const requestSchema = new mongoose.Schema(
     buyer: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
     seller: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
     quantity: { type: Number },
+    requestedQuantity: {
+      type: Number,
+      default: function () {
+        return Number.isFinite(this.quantity) ? this.quantity : undefined;
+      },
+    },
     message: { type: String },
     status: {
       type: String,

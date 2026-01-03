@@ -1,6 +1,8 @@
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import inventoryService from '../../services/inventoryService.js';
+
+const DRAFT_STORAGE_KEY = 'revault_add_inventory_draft';
 
 const AddInventory = () => {
   const navigate = useNavigate();
@@ -17,10 +19,63 @@ const AddInventory = () => {
   const [submitting, setSubmitting] = useState(false);
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
+  const [draftSaved, setDraftSaved] = useState(false);
+  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
+  const [draftNote, setDraftNote] = useState('');
   const fileInputsRef = useRef([]);
 
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem(DRAFT_STORAGE_KEY);
+      if (!raw) return;
+      const parsed = JSON.parse(raw);
+      if (parsed?.form && typeof parsed.form === 'object') {
+        setForm((prev) => ({ ...prev, ...parsed.form }));
+        setDraftSaved(true);
+        setHasUnsavedChanges(false);
+        setDraftNote('Draft restored');
+      }
+    } catch {
+      // ignore corrupted drafts
+    }
+  }, []);
+
+  const validateForm = () => {
+    if (!form.name.trim()) return 'Name is required';
+    if (!form.description.trim()) return 'Description is required';
+    if (Number(form.quantity) < 0) return 'Quantity must be zero or greater';
+    return '';
+  };
+
+  const clearDraft = () => {
+    localStorage.removeItem(DRAFT_STORAGE_KEY);
+    setDraftSaved(false);
+    setHasUnsavedChanges(false);
+    setDraftNote('');
+  };
+
+  const resetFormAndImages = () => {
+    setForm({
+      name: '',
+      description: '',
+      category: '',
+      quantity: '',
+      expiry: '',
+      condition: '',
+    });
+    previews.forEach((url) => {
+      if (url) URL.revokeObjectURL(url);
+    });
+    setImages(Array(4).fill(null));
+    setPreviews(Array(4).fill(null));
+  };
+
   const handleChange = (e) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
+    setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }));
+    if (draftSaved) {
+      setHasUnsavedChanges(true);
+      setDraftNote('Unsaved changes');
+    }
   };
 
   const handleSlotFiles = (fileList, slotIndex) => {
@@ -42,6 +97,11 @@ const AddInventory = () => {
       next[slotIndex] = URL.createObjectURL(firstImage);
       return next;
     });
+
+    if (draftSaved) {
+      setHasUnsavedChanges(true);
+      setDraftNote('Unsaved changes');
+    }
   };
 
   const handleRemoveImage = (index) => {
@@ -56,26 +116,61 @@ const AddInventory = () => {
       next[index] = null;
       return next;
     });
+
+    if (draftSaved) {
+      setHasUnsavedChanges(true);
+      setDraftNote('Unsaved changes');
+    }
+  };
+
+  const handleSaveDraft = (e) => {
+    e.preventDefault();
+    setMessage('');
+    setError('');
+
+    const validationError = validateForm();
+    if (validationError) {
+      setError(validationError);
+      return;
+    }
+
+    try {
+      localStorage.setItem(
+        DRAFT_STORAGE_KEY,
+        JSON.stringify({
+          form,
+          savedAt: new Date().toISOString(),
+        })
+      );
+      setDraftSaved(true);
+      setHasUnsavedChanges(false);
+      setDraftNote('Saved as draft');
+    } catch {
+      setError('Could not save draft');
+    }
+  };
+
+  const handleCancelDraft = (e) => {
+    e.preventDefault();
+    setMessage('');
+    setError('');
+    clearDraft();
+    resetFormAndImages();
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (!draftSaved || hasUnsavedChanges) {
+      setError('Please save the draft before confirming');
+      return;
+    }
     setSubmitting(true);
     setMessage('');
     setError('');
 
-    if (!form.name.trim()) {
-      setError('Name is required');
-      setSubmitting(false);
-      return;
-    }
-    if (!form.description.trim()) {
-      setError('Description is required');
-      setSubmitting(false);
-      return;
-    }
-    if (Number(form.quantity) < 0) {
-      setError('Quantity must be zero or greater');
+    const validationError = validateForm();
+    if (validationError) {
+      setError(validationError);
       setSubmitting(false);
       return;
     }
@@ -95,19 +190,8 @@ const AddInventory = () => {
 
       await inventoryService.add(formData);
       setMessage('Listing created successfully');
-      setForm({
-        name: '',
-        description: '',
-        category: '',
-        quantity: '',
-        expiry: '',
-        condition: '',
-      });
-      images.forEach((file, idx) => {
-        if (previews[idx]) URL.revokeObjectURL(previews[idx]);
-      });
-      setImages(Array(4).fill(null));
-      setPreviews(Array(4).fill(null));
+      clearDraft();
+      resetFormAndImages();
       setTimeout(() => navigate('/inventory/my'), 800);
     } catch (err) {
       setError(err?.message || 'Could not create listing');
@@ -115,6 +199,8 @@ const AddInventory = () => {
       setSubmitting(false);
     }
   };
+
+  const canConfirm = draftSaved && !hasUnsavedChanges;
 
   return (
     <section className="space-y-6">
@@ -245,14 +331,27 @@ const AddInventory = () => {
 
         {message ? <p className="text-sm text-emerald-700">{message}</p> : null}
         {error ? <p className="text-sm text-red-600">{error}</p> : null}
+        {draftNote ? <p className="text-sm text-gray-600">{draftNote}</p> : null}
 
         <button
-          type="submit"
+          type={canConfirm ? 'submit' : 'button'}
+          onClick={canConfirm ? undefined : handleSaveDraft}
           disabled={submitting}
           className="w-full rounded-md bg-gray-900 px-4 py-2 text-white hover:bg-gray-800 disabled:opacity-60"
         >
-          {submitting ? 'Saving…' : 'Save listing'}
+          {submitting ? 'Saving…' : canConfirm ? 'Confirm listing' : 'Save listing'}
         </button>
+
+        {draftSaved ? (
+          <button
+            type="button"
+            onClick={handleCancelDraft}
+            disabled={submitting}
+            className="w-full rounded-md border border-gray-200 bg-white px-4 py-2 text-gray-900 hover:border-gray-300 disabled:opacity-60"
+          >
+            Cancel
+          </button>
+        ) : null}
       </form>
     </section>
   );

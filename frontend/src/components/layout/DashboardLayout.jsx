@@ -5,11 +5,11 @@ import PrivateMain from '../ui/privateMain.jsx';
 
 const DashboardLayout = () => {
   return (
-    <div className="flex min-h-screen">
+    <div className="flex h-screen overflow-hidden">
       <div className="fixed left-0 top-0 h-screen w-64 overflow-y-auto">
         <PrivateSidebar />
       </div>
-      <div className="ml-64 flex flex-col flex-1 min-h-screen">
+      <div className="ml-64 flex flex-col flex-1 h-screen overflow-hidden">
         <PrivateHeader />
         <PrivateMain>
           <Outlet />

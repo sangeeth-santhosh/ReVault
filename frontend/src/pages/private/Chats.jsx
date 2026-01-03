@@ -6,7 +6,7 @@ import requestService from '../../services/requestService.js';
 const Chats = () => {
   const [threads, setThreads] = useState([]);
   const [selectedId, setSelectedId] = useState('');
-    const [searchParams, setSearchParams] = useSearchParams();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [messages, setMessages] = useState([]);
   const [loadingThreads, setLoadingThreads] = useState(true);
   const [loadingMessages, setLoadingMessages] = useState(false);
@@ -54,8 +54,16 @@ const Chats = () => {
   }, []);
 
   useEffect(() => {
+    const activeThread = threads.find((t) => (t._id || t.id) === selectedId);
+    const chatAllowed = ['accepted', 'completed'].includes(activeThread?.status);
+    if (!selectedId) return;
+    if (!chatAllowed) {
+      setMessages([]);
+      setLoadingMessages(false);
+      return;
+    }
     loadMessages(selectedId);
-  }, [selectedId]);
+  }, [selectedId, threads]);
 
   const handleSend = async (e) => {
     e.preventDefault();
