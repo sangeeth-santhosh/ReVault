@@ -4,7 +4,6 @@ import useAuth from '../../hooks/useAuth.js';
 import { register as registerService } from '../../services/authService.js';
 
 const Register = () => {
-  const { login } = useAuth();
   const navigate = useNavigate();
   const [form, setForm] = useState({
     businessName: '',
@@ -19,6 +18,8 @@ const Register = () => {
   });
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
+  const [isSuccess, setIsSuccess] = useState(false);
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -26,8 +27,12 @@ const Register = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    if (submitting || isSuccess) return;
+
     setSubmitting(true);
     setError('');
+    setSuccess('');
 
     const address = {
       street: form.street.trim(),
@@ -48,9 +53,9 @@ const Register = () => {
 
     try {
       const res = await registerService(payload);
-      if (res?.user && res?.token) {
-        login({ user: res.user, token: res.token });
-        navigate('/dashboard');
+      if (res?.success) {
+        setIsSuccess(true);
+        setSuccess('Your business request has been sent for admin approval');
       } else {
         setError('Unexpected response from server');
       }
@@ -158,13 +163,14 @@ const Register = () => {
             required
           />
         </div>
+        {success ? <p className="text-sm text-green-700">{success}</p> : null}
         {error ? <p className="text-sm text-red-600">{error}</p> : null}
         <button
           type="submit"
-          disabled={submitting}
+          disabled={submitting || isSuccess}
           className="w-full rounded-md bg-gray-900 px-4 py-2 text-white hover:bg-gray-800 disabled:opacity-60"
         >
-          {submitting ? 'Creating account...' : 'Sign up'}
+          {isSuccess ? 'Request Sent' : submitting ? 'Creating account...' : 'Sign up'}
         </button>
         <p className="text-center text-sm text-gray-600">
           Already have an account? <Link to="/login" className="font-semibold text-gray-900">Log in</Link>

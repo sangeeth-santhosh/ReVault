@@ -21,6 +21,12 @@ const userSchema = new mongoose.Schema(
 		company: { type: String },
 		phone: { type: String },
 		address: { type: addressSchema },
+		status: {
+			type: String,
+			enum: ['pending', 'approved', 'rejected', 'deactivated'],
+		},
+		appliedAt: { type: Date },
+		approvedAt: { type: Date },
 		approved: { type: Boolean, default: true },
 	},
 	{ timestamps: true }

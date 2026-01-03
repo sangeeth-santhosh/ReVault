@@ -1,3 +1,4 @@
+import { createElement } from "react";
 import { BarChart2, Home, LogOut, Users } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 
@@ -23,7 +24,7 @@ function AdminSidebar() {
           RV
         </div>
 
-        {sidebarItems.map(({ id, icon: Icon, to }) => (
+        {sidebarItems.map(({ id, icon, to }) => (
           <Link
             key={id}
             to={to}
@@ -33,7 +34,7 @@ function AdminSidebar() {
                 : "text-white/60 hover:bg-white/10"
             }`}
           >
-            <Icon size={20} />
+            {createElement(icon, { size: 20 })}
           </Link>
         ))}
       </div>

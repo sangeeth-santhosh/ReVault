@@ -124,6 +124,8 @@ export default function Dashboard() {
           </ResponsiveContainer>
         </div>
       </div>
+
+      <p className="mt-10 text-sm text-white/60">Admin overview and platform statistics.</p>
     </>
   );
 }

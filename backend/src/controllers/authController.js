@@ -10,6 +10,9 @@ const buildUserResponse = (user) => ({
   company: user.company,
   phone: user.phone,
   address: user.address,
+  status: user.status,
+  appliedAt: user.appliedAt,
+  approvedAt: user.approvedAt,
   approved: user.approved,
 });
 
@@ -41,14 +44,16 @@ export const register = async (req, res) => {
         state: address?.state,
         pincode: address?.pincode,
       },
+      status: 'pending',
+      appliedAt: new Date(),
+      approved: false,
     });
-
-    const token = createToken({ id: user._id, role: user.role });
 
     return res.status(201).json({
       success: true,
       user: buildUserResponse(user),
-      token,
+      token: null,
+      message: 'Your business registration is pending admin approval',
     });
   } catch (err) {
     console.error('register error', err);
@@ -64,6 +69,29 @@ export const login = async (req, res) => {
     if (!user) {
       return res.status(401).json({ success: false, message: 'Invalid credentials' });
     }
+
+    const effectiveStatus = user.status || (user.approved === false ? 'pending' : 'approved');
+    if (effectiveStatus !== 'approved') {
+      if (effectiveStatus === 'pending') {
+        return res
+          .status(403)
+          .json({ success: false, message: 'Your business is pending admin approval', status: effectiveStatus });
+      }
+      if (effectiveStatus === 'deactivated') {
+        return res
+          .status(403)
+          .json({ success: false, message: 'Your business account is deactivated', status: effectiveStatus });
+      }
+      if (effectiveStatus === 'rejected') {
+        return res
+          .status(403)
+          .json({ success: false, message: 'Your business registration was rejected', status: effectiveStatus });
+      }
+      return res
+        .status(403)
+        .json({ success: false, message: 'Your business is pending admin approval', status: effectiveStatus });
+    }
+
     const match = await user.matchPassword(password || '');
     if (!match) {
       return res.status(401).json({ success: false, message: 'Invalid credentials' });
