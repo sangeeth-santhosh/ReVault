@@ -7,7 +7,7 @@ const sidebarItems = [
   { id: "users", icon: Users, to: "/admin/users" },
 ];
 
-export default function AdminSidebar() {
+function AdminSidebar() {
   const location = useLocation();
   const pathname = location?.pathname || "";
 
@@ -44,3 +44,6 @@ export default function AdminSidebar() {
     </aside>
   );
 }
+
+export { AdminSidebar };
+export default AdminSidebar;
