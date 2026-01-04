@@ -25,6 +25,16 @@ const request = async (path, { method = 'GET', body } = {}) => {
 
   const data = await res.json().catch(() => ({}));
   if (!res.ok) {
+    if (res.status === 401 || res.status === 403) {
+      try {
+        localStorage.removeItem(AUTH_STORAGE_KEY);
+      } catch {
+        // ignore
+      }
+      if (typeof window !== 'undefined' && window.location?.pathname !== '/admin/login') {
+        window.location.assign('/admin/login');
+      }
+    }
     throw new Error(data?.message || 'Request failed');
   }
   return data;

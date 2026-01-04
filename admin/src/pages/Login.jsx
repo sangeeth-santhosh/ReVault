@@ -21,7 +21,12 @@ export default function Login() {
     setError("");
 
     try {
-      await adminLogin({ email, password });
+      const form = e.currentTarget;
+      const formData = new FormData(form);
+      const submittedEmail = (formData.get("email") || "").toString();
+      const submittedPassword = (formData.get("password") || "").toString();
+
+      await adminLogin({ email: submittedEmail.trim(), password: submittedPassword });
       navigate("/admin", { replace: true });
     } catch (err) {
       setError(err?.message || "Login failed");
@@ -41,6 +46,8 @@ export default function Login() {
             <label className="text-sm text-white/70">Email</label>
             <input
               type="email"
+              name="email"
+              autoComplete="username"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               className="w-full h-[44px] rounded-xl bg-white/5 border border-white/10 px-4 text-sm text-white placeholder:text-white/40 focus:outline-none"
@@ -52,6 +59,8 @@ export default function Login() {
             <label className="text-sm text-white/70">Password</label>
             <input
               type="password"
+              name="password"
+              autoComplete="current-password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               className="w-full h-[44px] rounded-xl bg-white/5 border border-white/10 px-4 text-sm text-white placeholder:text-white/40 focus:outline-none"

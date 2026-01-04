@@ -13,7 +13,6 @@ const buildUserResponse = (user) => ({
   status: user.status,
   appliedAt: user.appliedAt,
   approvedAt: user.approvedAt,
-  approved: user.approved,
 });
 
 export const register = async (req, res) => {
@@ -46,7 +45,6 @@ export const register = async (req, res) => {
       },
       status: 'pending',
       appliedAt: new Date(),
-      approved: false,
     });
 
     return res.status(201).json({
@@ -70,7 +68,7 @@ export const login = async (req, res) => {
       return res.status(401).json({ success: false, message: 'Invalid credentials' });
     }
 
-    const effectiveStatus = user.status || (user.approved === false ? 'pending' : 'approved');
+    const effectiveStatus = user.status || 'approved';
     if (effectiveStatus !== 'approved') {
       if (effectiveStatus === 'pending') {
         return res
@@ -111,6 +109,38 @@ export const login = async (req, res) => {
 
 export const getMe = async (req, res) => {
   return res.json({ success: true, user: req.user });
+};
+
+export const getRegistrationStatus = async (req, res) => {
+  try {
+    const email = (req.query.email || '').toString().trim().toLowerCase();
+    const phone = (req.query.phone || '').toString().trim();
+
+    if (!email && !phone) {
+      return res.status(400).json({ success: false, message: 'email or phone is required' });
+    }
+
+    const or = [];
+    if (email) or.push({ email });
+    if (phone) or.push({ phone });
+
+    const user = await User.findOne({ $or: or }).select('status appliedAt');
+
+    if (!user) {
+      return res.json({ success: true, exists: false, status: null, appliedAt: null });
+    }
+
+    const status = user.status || 'approved';
+    return res.json({
+      success: true,
+      exists: true,
+      status,
+      appliedAt: status === 'pending' ? user.appliedAt || null : null,
+    });
+  } catch (err) {
+    console.error('getRegistrationStatus error', err);
+    return res.status(500).json({ success: false, message: 'Could not fetch registration status' });
+  }
 };
 
 export default { register, login, getMe };

@@ -24,10 +24,10 @@ const userSchema = new mongoose.Schema(
 		status: {
 			type: String,
 			enum: ['pending', 'approved', 'rejected', 'deactivated'],
+			default: 'approved',
 		},
 		appliedAt: { type: Date },
 		approvedAt: { type: Date },
-		approved: { type: Boolean, default: true },
 	},
 	{ timestamps: true }
 );

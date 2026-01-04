@@ -31,7 +31,6 @@ export default function Users() {
 
   const getStatus = (u) => {
     if (u?.status) return u.status;
-    if (u?.approved === false) return "pending";
     return "approved";
   };
 

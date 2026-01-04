@@ -1,13 +1,13 @@
 import User from '../models/User.js';
 import { connectDB, disconnectDB } from '../config/db.js';
 
-const ADMIN_EMAIL = 'admin@gmail';
-const ADMIN_PASSWORD = 'admin';
+const ADMIN_EMAIL = (process.env.ADMIN_EMAIL || 'admin@gmail.com').trim().toLowerCase();
+const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'admin';
 
 const run = async () => {
   await connectDB();
 
-  const normalizedEmail = ADMIN_EMAIL.trim().toLowerCase();
+  const normalizedEmail = ADMIN_EMAIL;
 
   const existing = await User.findOne({ email: normalizedEmail });
 
@@ -16,7 +16,6 @@ const run = async () => {
     existing.businessName = existing.businessName || 'ReVault Admin';
     existing.name = existing.name || 'Admin';
     existing.password = ADMIN_PASSWORD;
-    existing.approved = true;
     existing.status = 'approved';
     existing.approvedAt = existing.approvedAt || new Date();
     existing.appliedAt = existing.appliedAt || existing.createdAt || new Date();
@@ -30,7 +29,6 @@ const run = async () => {
       email: normalizedEmail,
       password: ADMIN_PASSWORD,
       role: 'admin',
-      approved: true,
       status: 'approved',
       appliedAt: new Date(),
       approvedAt: new Date(),

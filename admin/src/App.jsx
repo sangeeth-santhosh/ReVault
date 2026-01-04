@@ -31,8 +31,8 @@ export default function App() {
         )}
       >
         <Route path="/" element={<Dashboard />} />
-          <Route path="/admin" element={<Dashboard />} />
-          <Route path="dashboard" element={<Dashboard />} />
+        <Route path="/admin" element={<Dashboard />} />
+        <Route path="/admin/dashboard" element={<Dashboard />} />
         <Route path="/admin/users" element={<Users />} />
         <Route path="/admin/inventory" element={<Inventory />} />
         <Route path="/admin/requests" element={<Requests />} />
