@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import useAuth from '../../hooks/useAuth.js';
 import { register as registerService } from '../../services/authService.js';
@@ -69,18 +69,40 @@ const Register = () => {
   const [error, setError] = useState('');
   const [requestStatus, setRequestStatus] = useState('none');
   const [appliedAt, setAppliedAt] = useState(null);
+  const prevRequestStatusRef = useRef('none');
 
   const isPending = requestStatus === 'pending';
 
-  const elapsed = useMemo(() => formatElapsed(appliedAt), [appliedAt]);
+  const elapsed = formatElapsed(appliedAt);
 
   useEffect(() => {
     let isMounted = true;
 
-    const fullReset = () => {
-      setRequestStatus('none');
-      setAppliedAt(null);
-      setForm(EMPTY_FORM);
+    const applyBackendState = ({ status, appliedAt: backendAppliedAt }) => {
+      const nextStatus = status === 'pending' ? 'pending' : 'none';
+
+      // Button state is always backend-driven.
+      setRequestStatus(nextStatus);
+      setAppliedAt(nextStatus === 'pending' ? backendAppliedAt || null : null);
+
+      // Effect safety: never reset while typing.
+      // Only clear inputs when status transitions pending -> approved/rejected.
+      if (
+        prevRequestStatusRef.current === 'pending' &&
+        (status === 'approved' || status === 'rejected')
+      ) {
+        setForm(EMPTY_FORM);
+      }
+
+      prevRequestStatusRef.current = nextStatus;
+    };
+
+    const fetchRegistrationStatus = async (email) => {
+      const normalizedEmail = (email || '').toString().trim();
+      if (!normalizedEmail) {
+        return { exists: false, status: null, appliedAt: null };
+      }
+      return apiClient.get(`/auth/registration-status?email=${encodeURIComponent(normalizedEmail)}`);
     };
 
     const reconcile = async () => {
@@ -90,44 +112,32 @@ const Register = () => {
       // If already logged in, their status is canonical.
       const effectiveUserStatus = user?.status || null;
       if (effectiveUserStatus === 'pending') {
-        setRequestStatus('pending');
-        setAppliedAt(user?.appliedAt || null);
-        setForm(EMPTY_FORM);
+        applyBackendState({ status: 'pending', appliedAt: user?.appliedAt || null });
         return;
       }
 
       if (effectiveUserStatus === 'approved' || effectiveUserStatus === 'rejected') {
-        fullReset();
+        applyBackendState({ status: effectiveUserStatus, appliedAt: null });
         return;
       }
 
-      const identity = readIdentity();
-      if (!identity?.email && !identity?.phone) {
-        fullReset();
+      const storedIdentity = readIdentity();
+
+      const email = (storedIdentity?.email || '').trim();
+      if (!email) {
+        applyBackendState({ status: null, appliedAt: null });
         return;
       }
 
       try {
-        const params = new URLSearchParams();
-        if (identity.email) params.set('email', identity.email);
-        if (identity.phone) params.set('phone', identity.phone);
-
-        const statusRes = await apiClient.get(`/auth/registration-status?${params.toString()}`);
+        const statusRes = await fetchRegistrationStatus(email);
         if (!isMounted) return;
 
         const backendStatus = statusRes?.status ?? null;
-        if (backendStatus === 'pending') {
-          setRequestStatus('pending');
-          setAppliedAt(statusRes?.appliedAt || null);
-          setForm(EMPTY_FORM);
-          return;
-        }
-
-        // Backend wins: not pending -> guaranteed reset.
-        fullReset();
+        applyBackendState({ status: backendStatus, appliedAt: statusRes?.appliedAt || null });
       } catch {
         if (!isMounted) return;
-        fullReset();
+        applyBackendState({ status: null, appliedAt: null });
       }
     };
 
@@ -138,7 +148,17 @@ const Register = () => {
   }, [user?.status, user?.appliedAt]);
 
   const handleChange = (e) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
+    const { name, value } = e.target;
+    setForm((prev) => {
+      const next = { ...prev, [name]: value };
+      if (name === 'email' || name === 'phone') {
+        writeIdentity({
+          email: (next.email || '').trim(),
+          phone: (next.phone || '').trim(),
+        });
+      }
+      return next;
+    });
   };
 
   const handleSubmit = async (e) => {
@@ -148,8 +168,6 @@ const Register = () => {
 
     setSubmitting(true);
     setError('');
-
-    const prevForm = form;
 
     const address = {
       street: form.street.trim(),
@@ -172,27 +190,22 @@ const Register = () => {
 
     try {
       const res = await registerService(payload);
-      if (res?.success) {
-        const nextStatus = res?.user?.status || null;
-        if (nextStatus === 'pending') {
-          setRequestStatus('pending');
-          setAppliedAt(res?.user?.appliedAt || null);
-          setForm(EMPTY_FORM);
-        } else {
-          setRequestStatus('none');
-          setAppliedAt(null);
-          setForm(EMPTY_FORM);
-        }
-      } else {
-        setRequestStatus('none');
-        setAppliedAt(null);
-        setForm(prevForm);
-        setError('Unexpected response from server');
+      if (!res?.success) {
+        throw new Error('Unexpected response from server');
       }
+
+      // Canonical: rebuild button state from backend status endpoint.
+      const statusRes = await apiClient.get(
+        `/auth/registration-status?email=${encodeURIComponent(payload.email)}`
+      );
+      const backendStatus = statusRes?.status ?? null;
+      const nextStatus = backendStatus === 'pending' ? 'pending' : 'none';
+      setRequestStatus(nextStatus);
+      setAppliedAt(nextStatus === 'pending' ? statusRes?.appliedAt || null : null);
+      prevRequestStatusRef.current = nextStatus;
     } catch (err) {
       setRequestStatus('none');
       setAppliedAt(null);
-      setForm(prevForm);
       setError(err?.message || 'Registration failed');
     } finally {
       setSubmitting(false);
@@ -212,7 +225,6 @@ const Register = () => {
             name="businessName"
             value={form.businessName}
             onChange={handleChange}
-            disabled={isPending}
             className="w-full rounded-md border border-gray-200 px-3 py-2 text-sm focus:border-gray-400 focus:outline-none disabled:cursor-not-allowed disabled:bg-gray-50"
             required
           />
@@ -223,7 +235,6 @@ const Register = () => {
             name="name"
             value={form.name}
             onChange={handleChange}
-            disabled={isPending}
             className="w-full rounded-md border border-gray-200 px-3 py-2 text-sm focus:border-gray-400 focus:outline-none disabled:cursor-not-allowed disabled:bg-gray-50"
             required
           />
@@ -235,7 +246,6 @@ const Register = () => {
             name="email"
             value={form.email}
             onChange={handleChange}
-            disabled={isPending}
             className="w-full rounded-md border border-gray-200 px-3 py-2 text-sm focus:border-gray-400 focus:outline-none disabled:cursor-not-allowed disabled:bg-gray-50"
             required
           />
@@ -246,7 +256,6 @@ const Register = () => {
             name="phone"
             value={form.phone}
             onChange={handleChange}
-            disabled={isPending}
             className="w-full rounded-md border border-gray-200 px-3 py-2 text-sm focus:border-gray-400 focus:outline-none disabled:cursor-not-allowed disabled:bg-gray-50"
           />
         </div>
@@ -257,7 +266,6 @@ const Register = () => {
               name="street"
               value={form.street}
               onChange={handleChange}
-              disabled={isPending}
               className="w-full rounded-md border border-gray-200 px-3 py-2 text-sm focus:border-gray-400 focus:outline-none disabled:cursor-not-allowed disabled:bg-gray-50"
               placeholder="Address line"
             />
@@ -268,7 +276,6 @@ const Register = () => {
               name="city"
               value={form.city}
               onChange={handleChange}
-              disabled={isPending}
               className="w-full rounded-md border border-gray-200 px-3 py-2 text-sm focus:border-gray-400 focus:outline-none disabled:cursor-not-allowed disabled:bg-gray-50"
             />
           </div>
@@ -278,7 +285,6 @@ const Register = () => {
               name="state"
               value={form.state}
               onChange={handleChange}
-              disabled={isPending}
               className="w-full rounded-md border border-gray-200 px-3 py-2 text-sm focus:border-gray-400 focus:outline-none disabled:cursor-not-allowed disabled:bg-gray-50"
             />
           </div>
@@ -288,7 +294,6 @@ const Register = () => {
               name="pincode"
               value={form.pincode}
               onChange={handleChange}
-              disabled={isPending}
               className="w-full rounded-md border border-gray-200 px-3 py-2 text-sm focus:border-gray-400 focus:outline-none disabled:cursor-not-allowed disabled:bg-gray-50"
             />
           </div>
@@ -300,7 +305,6 @@ const Register = () => {
             name="password"
             value={form.password}
             onChange={handleChange}
-            disabled={isPending}
             className="w-full rounded-md border border-gray-200 px-3 py-2 text-sm focus:border-gray-400 focus:outline-none disabled:cursor-not-allowed disabled:bg-gray-50"
             required
           />

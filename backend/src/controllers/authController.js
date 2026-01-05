@@ -26,8 +26,46 @@ export const register = async (req, res) => {
 
     const normalizedEmail = email.trim().toLowerCase();
     const existing = await User.findOne({ email: normalizedEmail });
+
     if (existing) {
-      return res.status(400).json({ success: false, message: 'Email already registered' });
+      const effectiveStatus = existing.status || 'approved';
+      if (effectiveStatus === 'approved') {
+        return res.status(400).json({
+          success: false,
+          message: 'This business is already registered. Please login.',
+        });
+      }
+      if (effectiveStatus === 'pending') {
+        return res.status(400).json({
+          success: false,
+          message: 'Your request is already pending admin approval.',
+        });
+      }
+      if (effectiveStatus === 'rejected' || effectiveStatus === 'deactivated') {
+        existing.status = 'pending';
+        existing.appliedAt = new Date();
+        existing.approvedAt = undefined;
+
+        // Allow updating business/contact details, but never reset password.
+        existing.businessName = businessName.trim();
+        existing.name = name.trim();
+        existing.company = company?.trim() || undefined;
+        existing.phone = phone?.trim() || undefined;
+        existing.address = {
+          street: address?.street,
+          city: address?.city,
+          state: address?.state,
+          pincode: address?.pincode,
+        };
+
+        await existing.save();
+        return res.status(201).json({
+          success: true,
+          user: buildUserResponse(existing),
+          token: null,
+          message: 'Your business registration is pending admin approval',
+        });
+      }
     }
 
     const user = await User.create({
@@ -113,18 +151,12 @@ export const getMe = async (req, res) => {
 
 export const getRegistrationStatus = async (req, res) => {
   try {
-    const email = (req.query.email || '').toString().trim().toLowerCase();
-    const phone = (req.query.phone || '').toString().trim();
-
-    if (!email && !phone) {
-      return res.status(400).json({ success: false, message: 'email or phone is required' });
+    const email = ((req.query.email ?? req.body?.email) || '').toString().trim().toLowerCase();
+    if (!email) {
+      return res.status(400).json({ success: false, message: 'email is required' });
     }
 
-    const or = [];
-    if (email) or.push({ email });
-    if (phone) or.push({ phone });
-
-    const user = await User.findOne({ $or: or }).select('status appliedAt');
+    const user = await User.findOne({ email }).select('status appliedAt');
 
     if (!user) {
       return res.json({ success: true, exists: false, status: null, appliedAt: null });
@@ -143,4 +175,4 @@ export const getRegistrationStatus = async (req, res) => {
   }
 };
 
-export default { register, login, getMe };
+export default { register, login, getMe, getRegistrationStatus };

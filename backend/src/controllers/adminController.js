@@ -103,23 +103,11 @@ export const rejectUser = async (req, res) => {
     if (!user) {
       return res.status(404).json({ success: false, message: 'User not found' });
     }
-
-    // If this is a pending application (i.e. they have applied), removing the document
-    // fully resets registration state and allows a clean re-apply.
-    const effectiveStatus = user.status || 'approved';
-    if (user.role === 'user' && effectiveStatus === 'pending') {
-      await User.deleteOne({ _id: user._id });
-      return res.json({
-        success: true,
-        data: { id: user._id, status: 'rejected', deleted: true },
-      });
-    }
-
     const update = buildStatusUpdate(user, 'rejected');
     const updated = await User.findByIdAndUpdate(user._id, update, { new: true });
     return res.json({
       success: true,
-      data: { id: updated?._id || user._id, status: updated?.status || 'rejected', deleted: false },
+      data: { id: updated?._id || user._id, status: updated?.status || 'rejected' },
     });
   } catch (err) {
     console.error('rejectUser error', err);
