@@ -1,5 +1,13 @@
 @import "tailwindcss";
 
+button {
+	cursor: pointer;
+}
+
+button:disabled {
+	cursor: not-allowed;
+}
+
 /* Hide scrollbars but keep scrolling */
 .no-scrollbar {
 	-ms-overflow-style: none; /* IE/Edge legacy */
