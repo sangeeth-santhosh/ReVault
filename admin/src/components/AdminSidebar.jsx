@@ -1,6 +1,7 @@
 import { createElement } from "react";
 import { BarChart2, Home, LogOut, Users } from "lucide-react";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
+import { adminLogout } from "../services/adminService.js";
 
 const sidebarItems = [
   { id: "home", icon: Home, to: "/admin" },
@@ -10,11 +11,17 @@ const sidebarItems = [
 
 function AdminSidebar() {
   const location = useLocation();
+  const navigate = useNavigate();
   const pathname = location?.pathname || "";
 
   const isActive = (to) => {
     if (to === "/admin") return pathname === "/" || pathname === "/admin";
     return pathname === to;
+  };
+
+  const onLogout = () => {
+    adminLogout();
+    navigate("/admin/login", { replace: true });
   };
 
   return (
@@ -39,9 +46,15 @@ function AdminSidebar() {
         ))}
       </div>
 
-      <div className="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center">
+      <button
+        type="button"
+        onClick={onLogout}
+        aria-label="Log out"
+        title="Log out"
+        className="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center hover:bg-white/15"
+      >
         <LogOut size={15} />
-      </div>
+      </button>
     </aside>
   );
 }
