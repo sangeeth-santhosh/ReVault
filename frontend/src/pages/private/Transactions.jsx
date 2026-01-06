@@ -4,6 +4,7 @@ import transactionService from '../../services/transactionService.js';
 
 const Transactions = () => {
   const { user } = useAuth();
+  const userId = user?._id || user?.id;
   const [transactions, setTransactions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -61,9 +62,9 @@ const Transactions = () => {
                 <tr key={tx._id || tx.id}>
                   <td className="px-4 py-3">{tx.request?.inventory?.title || tx.item || tx.inventoryTitle || 'Item'}</td>
                   <td className="px-4 py-3">{
-                    String(tx.buyer) === String(user?.id)
+                    String(tx.buyer?._id || tx.buyer) === String(userId)
                       ? 'Buyer'
-                      : String(tx.seller) === String(user?.id)
+                      : String(tx.seller?._id || tx.seller) === String(userId)
                       ? 'Seller'
                       : tx.role || '—'
                   }</td>

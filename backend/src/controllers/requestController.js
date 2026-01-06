@@ -72,6 +72,13 @@ const updateStatus = async (req, res, status) => {
     if (!request) {
       return res.status(404).json({ success: false, message: 'Request not found' });
     }
+
+    if (request.status !== 'pending') {
+      return res.status(409).json({
+        success: false,
+        message: `Only pending requests can be ${status}`,
+      });
+    }
     request.status = status;
     await request.save();
 

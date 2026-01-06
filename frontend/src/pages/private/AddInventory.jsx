@@ -4,6 +4,31 @@ import inventoryService from '../../services/inventoryService.js';
 
 const DRAFT_STORAGE_KEY = 'revault_add_inventory_draft';
 
+const CATEGORY_OPTIONS = [
+  { value: '', label: 'Select category' },
+  { value: 'electronics', label: 'Electronics' },
+  { value: 'food', label: 'Food & Beverage' },
+  { value: 'packaging', label: 'Packaging' },
+  { value: 'medical', label: 'Medical' },
+  { value: 'chemicals', label: 'Chemicals' },
+  { value: 'other', label: 'Other' },
+];
+
+const UNIT_OPTIONS = [
+  { value: '', label: 'Unit' },
+  { value: 'pieces', label: 'Pieces' },
+  { value: 'kg', label: 'Kg' },
+  { value: 'liters', label: 'Liters' },
+  { value: 'cartons', label: 'Cartons' },
+];
+
+const CONDITION_OPTIONS = [
+  { value: '', label: 'Select condition' },
+  { value: 'unused', label: 'Unused' },
+  { value: 'used', label: 'Used' },
+  { value: 'surplus', label: 'Surplus' },
+];
+
 const AddInventory = () => {
   const navigate = useNavigate();
   const [form, setForm] = useState({
@@ -11,8 +36,10 @@ const AddInventory = () => {
     description: '',
     category: '',
     quantity: '',
-    expiry: '',
+    unit: '',
+    expiryDate: '',
     condition: '',
+    location: '',
   });
   const [images, setImages] = useState(Array(4).fill(null));
   const [previews, setPreviews] = useState(Array(4).fill(null));
@@ -30,7 +57,11 @@ const AddInventory = () => {
       if (!raw) return;
       const parsed = JSON.parse(raw);
       if (parsed?.form && typeof parsed.form === 'object') {
-        setForm((prev) => ({ ...prev, ...parsed.form }));
+        const restored = { ...parsed.form };
+        if (!restored.expiryDate && restored.expiry) {
+          restored.expiryDate = restored.expiry;
+        }
+        setForm((prev) => ({ ...prev, ...restored }));
         setDraftSaved(true);
         setHasUnsavedChanges(false);
         setDraftNote('Draft restored');
@@ -42,8 +73,20 @@ const AddInventory = () => {
 
   const validateForm = () => {
     if (!form.name.trim()) return 'Name is required';
+    if (!form.category) return 'Category is required';
     if (!form.description.trim()) return 'Description is required';
-    if (Number(form.quantity) < 0) return 'Quantity must be zero or greater';
+    const qty = Number(form.quantity);
+    if (!Number.isFinite(qty) || qty <= 0) return 'Quantity must be greater than 0';
+    if (!form.unit) return 'Unit is required';
+    if (!form.condition) return 'Condition is required';
+    if (!form.expiryDate) return 'Expiry date is required';
+    const expiry = new Date(form.expiryDate);
+    if (Number.isNaN(expiry.getTime())) return 'Expiry date is invalid';
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const expiryDay = new Date(expiry);
+    expiryDay.setHours(0, 0, 0, 0);
+    if (expiryDay < today) return 'Expiry date cannot be in the past';
     return '';
   };
 
@@ -60,8 +103,10 @@ const AddInventory = () => {
       description: '',
       category: '',
       quantity: '',
-      expiry: '',
+      unit: '',
+      expiryDate: '',
       condition: '',
+      location: '',
     });
     previews.forEach((url) => {
       if (url) URL.revokeObjectURL(url);
@@ -177,12 +222,17 @@ const AddInventory = () => {
 
     try {
       const formData = new FormData();
+      formData.append('name', form.name);
       formData.append('title', form.name);
       formData.append('description', form.description);
       formData.append('category', form.category);
       formData.append('quantity', Number(form.quantity) || 0);
-      formData.append('expiry', form.expiry);
+      formData.append('unit', form.unit);
+      formData.append('expiryDate', form.expiryDate);
       formData.append('condition', form.condition);
+      if (form.location.trim()) {
+        formData.append('location', form.location.trim());
+      }
 
       images.filter(Boolean).forEach((file) => {
         formData.append('images', file);
@@ -222,46 +272,87 @@ const AddInventory = () => {
           </div>
           <div className="space-y-1">
             <label className="text-sm font-medium text-gray-700">Category</label>
-            <input
+            <select
               name="category"
               value={form.category}
               onChange={handleChange}
-              className="w-full rounded-md border border-gray-200 px-3 py-2 text-sm focus:border-gray-400 focus:outline-none"
-            />
+              className="w-full rounded-md border border-gray-200 bg-white px-3 py-2 text-sm focus:border-gray-400 focus:outline-none"
+              required
+            >
+              {CATEGORY_OPTIONS.map((opt) => (
+                <option key={opt.value || 'empty'} value={opt.value} disabled={opt.value === ''}>
+                  {opt.label}
+                </option>
+              ))}
+            </select>
           </div>
+        </div>
+
+        <div className="space-y-1">
+          <label className="text-sm font-medium text-gray-700">Location (optional)</label>
+          <input
+            name="location"
+            value={form.location}
+            onChange={handleChange}
+            className="w-full rounded-md border border-gray-200 px-3 py-2 text-sm focus:border-gray-400 focus:outline-none"
+            placeholder="e.g. Warehouse A"
+          />
         </div>
 
         <div className="grid gap-4 md:grid-cols-3">
           <div className="space-y-1">
             <label className="text-sm font-medium text-gray-700">Quantity</label>
-            <input
-              name="quantity"
-              type="number"
-              min="0"
-              value={form.quantity}
-              onChange={handleChange}
-              className="w-full rounded-md border border-gray-200 px-3 py-2 text-sm focus:border-gray-400 focus:outline-none"
-            />
+            <div className="grid grid-cols-2 gap-3">
+              <input
+                name="quantity"
+                type="number"
+                min="1"
+                value={form.quantity}
+                onChange={handleChange}
+                className="w-full rounded-md border border-gray-200 px-3 py-2 text-sm focus:border-gray-400 focus:outline-none"
+                required
+              />
+              <select
+                name="unit"
+                value={form.unit}
+                onChange={handleChange}
+                className="w-full rounded-md border border-gray-200 bg-white px-3 py-2 text-sm focus:border-gray-400 focus:outline-none"
+                required
+              >
+                {UNIT_OPTIONS.map((opt) => (
+                  <option key={opt.value || 'empty'} value={opt.value} disabled={opt.value === ''}>
+                    {opt.label}
+                  </option>
+                ))}
+              </select>
+            </div>
           </div>
           <div className="space-y-1">
-            <label className="text-sm font-medium text-gray-700">Expiry</label>
+            <label className="text-sm font-medium text-gray-700">Expiry date</label>
             <input
-              name="expiry"
+              name="expiryDate"
               type="date"
-              value={form.expiry}
+              value={form.expiryDate}
               onChange={handleChange}
               className="w-full rounded-md border border-gray-200 px-3 py-2 text-sm focus:border-gray-400 focus:outline-none"
+              required
             />
           </div>
           <div className="space-y-1">
             <label className="text-sm font-medium text-gray-700">Condition</label>
-            <input
+            <select
               name="condition"
               value={form.condition}
               onChange={handleChange}
-              className="w-full rounded-md border border-gray-200 px-3 py-2 text-sm focus:border-gray-400 focus:outline-none"
-              placeholder="e.g. Grade A"
-            />
+              className="w-full rounded-md border border-gray-200 bg-white px-3 py-2 text-sm focus:border-gray-400 focus:outline-none"
+              required
+            >
+              {CONDITION_OPTIONS.map((opt) => (
+                <option key={opt.value || 'empty'} value={opt.value} disabled={opt.value === ''}>
+                  {opt.label}
+                </option>
+              ))}
+            </select>
           </div>
         </div>
 

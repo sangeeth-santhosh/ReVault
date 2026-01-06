@@ -83,8 +83,23 @@ const ItemDetails = () => {
   };
 
   const isOwner = user && item?.owner && (user._id === item.owner._id || user._id === item.owner);
-  const availableQty = Number(item?.quantity);
+  const availableQty = Number(item?.quantity ?? 0);
+  const unitLabel = item?.unit || 'units';
   const userAlreadyRequested = userRequests.find((r) => (r.inventory?._id || r.inventory) === (item?._id || item?.id));
+
+  const businessLocationText = useMemo(() => {
+    const addr = item?.owner?.address;
+    const street = addr?.street ? String(addr.street).trim() : '';
+    const city = addr?.city ? String(addr.city).trim() : '';
+    const state = addr?.state ? String(addr.state).trim() : '';
+    const pincode = addr?.pincode ? String(addr.pincode).trim() : '';
+
+    const leftParts = [street, city, state].filter(Boolean);
+    const left = leftParts.join(', ');
+    if (!left && !pincode) return '';
+    if (left && pincode) return `${left} - ${pincode}`;
+    return left || pincode;
+  }, [item]);
 
   const mainImage = useMemo(() => {
     if (item?.images?.length) return item.images[activeImage] || item.images[0];
@@ -133,7 +148,7 @@ const ItemDetails = () => {
               <div className="space-y-6">
                 {/* Header */}
                 <div>
-                  <h1 className="text-3xl font-bold text-gray-900 mb-2">{item.title || 'Untitled Item'}</h1>
+                  <h1 className="text-3xl font-bold text-gray-900 mb-2">{item.title || item.name || 'Untitled Item'}</h1>
                   <p className="text-sm text-gray-600">
                     Posted {item.createdAt ? new Date(item.createdAt).toLocaleDateString() : '—'}
                   </p>
@@ -151,7 +166,7 @@ const ItemDetails = () => {
                   </div>
                   <div className="flex items-center justify-between">
                     <span className="text-sm font-medium text-gray-600">Available Quantity</span>
-                    <span className="text-sm text-gray-900">{item.quantity ?? 0} units</span>
+                    <span className="text-sm text-gray-900">{availableQty} {unitLabel}</span>
                   </div>
                 </div>
 
@@ -167,7 +182,9 @@ const ItemDetails = () => {
                     <h3 className="text-sm font-semibold text-gray-900">Business</h3>
                     <div className="text-sm text-gray-700">
                       <p>{item.owner?.businessName || item.owner?.name || 'Unknown'}</p>
-                      {item.location ? <p className="text-xs text-gray-600">{item.location}</p> : null}
+                      <p className="text-xs text-gray-600">
+                        {businessLocationText ? businessLocationText : 'Location not provided'}
+                      </p>
                     </div>
                   </div>
                 ) : null}
@@ -210,7 +227,7 @@ const ItemDetails = () => {
                           className="w-full mt-1 rounded border border-gray-300 px-3 py-2 text-sm focus:border-gray-500 focus:outline-none"
                         />
                         <p className="mt-1 text-xs text-gray-600">
-                          Available: {availableQty} units
+                          Available: {availableQty} {unitLabel}
                         </p>
                       </div>
                       {requestingError ? (
