@@ -247,6 +247,8 @@ export default function Users() {
               const joinedDate = u?.approvedAt || u?.createdAt;
               const isExpanded = !!expanded?.approved?.[u._id];
               const isBusy = actionId === u._id;
+              const canDeactivate = status === "approved";
+              const canReactivate = status === "deactivated" || status === "rejected";
 
               return (
                 <div key={u._id} className="border-b border-white/10 last:border-b-0">
@@ -266,14 +268,27 @@ export default function Users() {
                       >
                         {isExpanded ? "Hide" : "View"}
                       </button>
-                      <button
-                        type="button"
-                        onClick={() => onDeactivate(u._id)}
-                        disabled={isBusy}
-                        className="h-[34px] px-3 rounded-xl bg-white/5 border border-white/10 text-xs text-white/70 disabled:opacity-60"
-                      >
-                        Deactivate
-                      </button>
+                      {canDeactivate ? (
+                        <button
+                          type="button"
+                          onClick={() => onDeactivate(u._id)}
+                          disabled={isBusy}
+                          className="h-[34px] px-3 rounded-xl bg-white/5 border border-white/10 text-xs text-white/70 disabled:opacity-60"
+                        >
+                          Deactivate
+                        </button>
+                      ) : null}
+
+                      {canReactivate ? (
+                        <button
+                          type="button"
+                          onClick={() => onApprove(u._id)}
+                          disabled={isBusy}
+                          className="h-[34px] px-3 rounded-xl bg-white text-black text-xs font-semibold disabled:opacity-60"
+                        >
+                          Reactivate
+                        </button>
+                      ) : null}
                     </div>
                   </div>
 

@@ -36,7 +36,7 @@ export default function Dashboard() {
     <>
       <div className="flex items-start justify-between mb-6">
         <div>
-          <h1 className="text-2xl font-semibold">Hello, Barbara! 👋</h1>
+          <h1 className="text-2xl font-semibold">Hello, Admin! 👋</h1>
           <p className="text-sm opacity-50 mt-3">
             This is what’s happening in your store this month.
           </p>

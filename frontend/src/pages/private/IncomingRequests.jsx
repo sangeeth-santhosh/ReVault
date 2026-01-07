@@ -5,6 +5,7 @@ const IncomingRequests = () => {
   const [requests, setRequests] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [actionId, setActionId] = useState('');
 
   const load = async () => {
     setLoading(true);
@@ -24,6 +25,8 @@ const IncomingRequests = () => {
   }, []);
 
   const updateStatus = async (id, action) => {
+    if (!id || actionId) return;
+    setActionId(String(id));
     try {
       if (action === 'accept') await requestService.accept(id);
       if (action === 'reject') await requestService.reject(id);
@@ -31,6 +34,8 @@ const IncomingRequests = () => {
       await load();
     } catch (err) {
       setError(err?.message || 'Action failed');
+    } finally {
+      setActionId('');
     }
   };
 
@@ -60,27 +65,34 @@ const IncomingRequests = () => {
               </div>
               <div className="flex items-center gap-2 text-sm">
                 <span className="rounded-full bg-gray-100 px-3 py-1 text-gray-700">{req.status || 'pending'}</span>
-                <button
-                  onClick={() => updateStatus(req._id || req.id, 'accept')}
-                  disabled={(req.status || 'pending') !== 'pending'}
-                  className="rounded-md border border-gray-200 px-3 py-1 hover:border-gray-300"
-                >
-                  Accept
-                </button>
-                <button
-                  onClick={() => updateStatus(req._id || req.id, 'reject')}
-                  disabled={(req.status || 'pending') !== 'pending'}
-                  className="rounded-md border border-gray-200 px-3 py-1 hover:border-gray-300"
-                >
-                  Reject
-                </button>
-                <button
-                  onClick={() => updateStatus(req._id || req.id, 'complete')}
-                  disabled={(req.status || 'pending') !== 'accepted'}
-                  className="rounded-md border border-gray-200 px-3 py-1 hover:border-gray-300"
-                >
-                  Complete
-                </button>
+                {(req.status || 'pending') === 'pending' ? (
+                  <>
+                    <button
+                      onClick={() => updateStatus(req._id || req.id, 'accept')}
+                      disabled={actionId === String(req._id || req.id)}
+                      className="rounded-md border border-gray-200 px-3 py-1 hover:border-gray-300 disabled:opacity-60"
+                    >
+                      Accept
+                    </button>
+                    <button
+                      onClick={() => updateStatus(req._id || req.id, 'reject')}
+                      disabled={actionId === String(req._id || req.id)}
+                      className="rounded-md border border-gray-200 px-3 py-1 hover:border-gray-300 disabled:opacity-60"
+                    >
+                      Reject
+                    </button>
+                  </>
+                ) : null}
+
+                {(req.status || 'pending') === 'accepted' ? (
+                  <button
+                    onClick={() => updateStatus(req._id || req.id, 'complete')}
+                    disabled={actionId === String(req._id || req.id)}
+                    className="rounded-md border border-gray-200 px-3 py-1 hover:border-gray-300 disabled:opacity-60"
+                  >
+                    Complete
+                  </button>
+                ) : null}
               </div>
             </div>
             {['accepted', 'completed'].includes(req.status) ? null : (

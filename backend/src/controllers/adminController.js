@@ -64,9 +64,10 @@ export const getPendingBusinesses = async (_req, res) => {
 
 export const getApprovedBusinesses = async (_req, res) => {
   try {
+    // Return all non-pending businesses so deactivated/rejected remain visible in admin.
     const users = await User.find({
       role: 'user',
-      $or: [{ status: 'approved' }, { status: { $exists: false } }],
+      status: { $ne: 'pending' },
     }).select(userSafeSelect);
     return res.json({ success: true, data: users });
   } catch (err) {
