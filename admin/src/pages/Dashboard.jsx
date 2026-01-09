@@ -10,27 +10,62 @@ import {
   YAxis,
 } from "recharts";
 import { Calendar } from "lucide-react";
-import { useState } from "react";
-
-const revenueData = [
-  { name: "1 Aug", value: 12000 },
-  { name: "2 Aug", value: 4000 },
-  { name: "3 Aug", value: 9000 },
-  { name: "4 Aug", value: 7000 },
-  { name: "5 Aug", value: 11000 },
-  { name: "6 Aug", value: 15000 },
-  { name: "7 Aug", value: 17000 },
-];
-
-const categoryData = [
-  { name: "MacBook", value: 35, color: "#4F8BFF" },
-  { name: "Watch", value: 25, color: "#FF9F43" },
-  { name: "AirPods", value: 20, color: "#FFD166" },
-  { name: "Accessories", value: 20, color: "#2ED573" },
-];
+import { useEffect, useMemo, useState } from "react";
+import { fetchAdminDashboard } from "../services/adminService";
 
 export default function Dashboard() {
   const [range, setRange] = useState("This month");
+
+  const [cards, setCards] = useState({
+    totalRevenue: 0,
+    totalOrders: 0,
+    totalVisitors: 0,
+    netProfit: 0,
+  });
+  const [revenueData, setRevenueData] = useState([]);
+  const [categoryData, setCategoryData] = useState([]);
+
+  const apiRange = useMemo(() => (range === "This month" ? "this_month" : "other"), [range]);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    const load = async () => {
+      try {
+        const res = await fetchAdminDashboard(apiRange);
+        const data = res?.data || {};
+
+        if (cancelled) return;
+
+        setCards({
+          totalRevenue: Number(data?.cards?.totalRevenue || 0),
+          totalOrders: Number(data?.cards?.totalOrders || 0),
+          totalVisitors: Number(data?.cards?.totalVisitors || 0),
+          netProfit: Number(data?.cards?.netProfit || 0),
+        });
+        setRevenueData(Array.isArray(data?.revenueData) ? data.revenueData : []);
+        setCategoryData(Array.isArray(data?.categoryData) ? data.categoryData : []);
+      } catch (err) {
+        console.error("Failed to load admin dashboard", err);
+        if (!cancelled) {
+          setCards({ totalRevenue: 0, totalOrders: 0, totalVisitors: 0, netProfit: 0 });
+          setRevenueData([]);
+          setCategoryData([]);
+        }
+      }
+    };
+
+    load();
+    return () => {
+      cancelled = true;
+    };
+  }, [apiRange]);
+
+  const formatMoney = (n) => {
+    const value = Number.isFinite(n) ? n : 0;
+    const rounded = Math.round(value);
+    return rounded.toLocaleString();
+  };
 
   return (
     <>
@@ -63,25 +98,25 @@ export default function Dashboard() {
       <div className="grid grid-cols-4 gap-6 mb-6">
         <div className="h-[110px] rounded-2xl bg-white p-5 text-black">
           <p className="text-sm opacity-60">Total revenue</p>
-          <h2 className="text-2xl font-semibold mt-2">$ 99,560</h2>
+          <h2 className="text-2xl font-semibold mt-2">$ {formatMoney(cards.totalRevenue)}</h2>
           <span className="text-xs text-green-600">+2.5%</span>
         </div>
 
         <div className="h-[110px] rounded-2xl bg-white/5 p-5 backdrop-blur-xl border border-white/10">
           <p className="text-sm opacity-60">Total orders</p>
-          <h2 className="text-2xl font-semibold mt-2">35</h2>
+          <h2 className="text-2xl font-semibold mt-2">{cards.totalOrders}</h2>
           <span className="text-xs text-red-400">-1.4%</span>
         </div>
 
         <div className="h-[110px] rounded-2xl bg-white/5 p-5 backdrop-blur-xl border border-white/10">
           <p className="text-sm opacity-60">Total visitors</p>
-          <h2 className="text-2xl font-semibold mt-2">45,600</h2>
+          <h2 className="text-2xl font-semibold mt-2">{cards.totalVisitors.toLocaleString()}</h2>
           <span className="text-xs text-red-400">-2.1%</span>
         </div>
 
         <div className="h-[110px] rounded-2xl bg-white/5 p-5 backdrop-blur-xl border border-white/10">
           <p className="text-sm opacity-60">Net profit</p>
-          <h2 className="text-2xl font-semibold mt-2">$ 60,450</h2>
+          <h2 className="text-2xl font-semibold mt-2">$ {formatMoney(cards.netProfit)}</h2>
           <span className="text-xs text-green-400">+5.2%</span>
         </div>
       </div>

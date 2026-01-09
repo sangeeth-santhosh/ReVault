@@ -6,9 +6,10 @@ import { adminLogout } from "../services/adminService.js";
 const sidebarItems = [
   { id: "home", icon: Home, to: "/admin" },
   { id: "inventory", icon: Boxes, to: "/admin/inventory" },
+    { id: "users", icon: Users, to: "/admin/users" },
   { id: "transactions", icon: ArrowLeftRight, to: "/admin/transactions" },
   { id: "chart", icon: BarChart2, to: "/admin/reports" },
-  { id: "users", icon: Users, to: "/admin/users" },
+
 ];
 
 function AdminSidebar() {

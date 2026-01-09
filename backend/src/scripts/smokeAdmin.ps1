@@ -76,6 +76,11 @@ if ($notiCount -gt 0) {
 	}
 }
 
+Write-Host "== Admin Dashboard ==" -ForegroundColor Cyan
+$dash = Invoke-RestMethod -Method Get -Uri "$base/admin/dashboard?range=this_month" -Headers $headers
+$cards = $dash.data.cards
+Write-Host ("Dashboard cards: revenue={0} orders={1} visitors={2} profit={3}" -f $cards.totalRevenue, $cards.totalOrders, $cards.totalVisitors, $cards.netProfit) -ForegroundColor Green
+
 Write-Host "== Admin Reports (CSV/PDF) ==" -ForegroundColor Cyan
 $csv = Invoke-WebRequest -UseBasicParsing -Method Get -Uri "$base/admin/reports/inventory/csv" -Headers $headers
 Write-Host "Inventory CSV content-type: $($csv.Headers['Content-Type'])" -ForegroundColor Green

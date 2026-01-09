@@ -10,7 +10,7 @@ export default function AdminLayout() {
 
   const loadNotifications = useCallback(async () => {
     try {
-      const res = await apiClient.get("/admin/notifications?limit=50");
+      const res = await apiClient.get("/admin/notifications?limit=100");
       setNotifications(Array.isArray(res?.data) ? res.data : []);
       setUnreadCount(Number.isFinite(res?.unreadCount) ? res.unreadCount : 0);
     } catch {
@@ -28,7 +28,7 @@ export default function AdminLayout() {
       return prev.map((n) => {
         const nid = n?._id || n?.id;
         if (nid !== id) return n;
-        return { ...n, isRead: true };
+        return { ...n, isRead: true, updatedAt: new Date().toISOString() };
       });
     });
 

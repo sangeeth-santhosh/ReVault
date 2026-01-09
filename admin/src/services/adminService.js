@@ -39,12 +39,18 @@ export const approveBusiness = (id) => apiClient.put(`/admin/users/approve/${id}
 export const rejectBusiness = (id) => apiClient.put(`/admin/users/reject/${id}`);
 export const deactivateBusiness = (id) => apiClient.put(`/admin/users/deactivate/${id}`);
 
+export const fetchAdminDashboard = (range) => {
+  const q = range ? `?range=${encodeURIComponent(range)}` : '';
+  return apiClient.get(`/admin/dashboard${q}`);
+};
+
 export default {
   adminLogin,
   adminLogout,
   getAdminSession,
   fetchPendingBusinesses,
   fetchApprovedBusinesses,
+  fetchAdminDashboard,
   approveBusiness,
   rejectBusiness,
   deactivateBusiness,

@@ -18,6 +18,7 @@ export default function AdminHeader({
 }) {
   const navigate = useNavigate();
   const [open, setOpen] = useState(false);
+  const [showAllUnread, setShowAllUnread] = useState(false);
   const popoverRef = useRef(null);
 
   const today = new Date();
@@ -74,6 +75,10 @@ export default function AdminHeader({
     };
   }, [open]);
 
+  useEffect(() => {
+    if (!open) setShowAllUnread(false);
+  }, [open]);
+
   const toggleNotifications = async () => {
     setOpen((prev) => !prev);
     if (!open) {
@@ -97,6 +102,44 @@ export default function AdminHeader({
     }
     navigate(routeForType(n?.type));
   };
+
+  const getId = (n) => n?._id || n?.id;
+
+  const sorted = useMemo(() => {
+    const copy = Array.isArray(notifications) ? [...notifications] : [];
+    copy.sort((a, b) => {
+      const ad = new Date(a?.createdAt || 0).getTime();
+      const bd = new Date(b?.createdAt || 0).getTime();
+      return bd - ad;
+    });
+    return copy;
+  }, [notifications]);
+
+  const visibleNotifications = useMemo(() => {
+    const unread = sorted.filter((n) => !n?.isRead);
+
+    const readSorted = sorted
+      .filter((n) => n?.isRead)
+      .sort((a, b) => {
+        const ad = new Date(a?.updatedAt || a?.createdAt || 0).getTime();
+        const bd = new Date(b?.updatedAt || b?.createdAt || 0).getTime();
+        return bd - ad;
+      });
+
+    const unreadAllowed = showAllUnread || unread.length <= 10 ? unread : unread.slice(0, 10);
+    const allowedUnreadIds = new Set(unreadAllowed.map(getId).filter(Boolean));
+
+    const allowedReadIds = new Set(readSorted.slice(0, 3).map(getId).filter(Boolean));
+
+    return sorted.filter((n) => {
+      const id = getId(n);
+      if (!id) return false;
+      if (!n?.isRead) return allowedUnreadIds.has(id);
+      return allowedReadIds.has(id);
+    });
+  }, [sorted, showAllUnread]);
+
+  const showSeeMore = unreadCount > 10 && !showAllUnread;
 
   return (
     <div className="relative z-50 flex justify-between items-start mb-0">
@@ -139,8 +182,8 @@ export default function AdminHeader({
                 <div className="px-4 py-6 text-sm text-white/60">No notifications yet.</div>
               ) : (
                 <div className="max-h-[360px] overflow-y-auto no-scrollbar">
-                  {notifications.map((n) => {
-                    const id = n?._id || n?.id;
+                  {visibleNotifications.map((n) => {
+                    const id = getId(n);
                     const isUnread = !n?.isRead;
                     return (
                       <button
@@ -160,6 +203,16 @@ export default function AdminHeader({
                       </button>
                     );
                   })}
+
+                  {showSeeMore ? (
+                    <button
+                      type="button"
+                      onClick={() => setShowAllUnread(true)}
+                      className="w-full text-left px-4 py-3 hover:bg-white/5 text-sm text-white/70"
+                    >
+                      See more
+                    </button>
+                  ) : null}
                 </div>
               )}
             </div>

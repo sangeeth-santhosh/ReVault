@@ -17,6 +17,7 @@ import {
 	downloadQuantityTransferredPdfAdmin,
 } from '../controllers/reportController.js';
 import { getAdminNotifications, markNotificationRead } from '../controllers/notificationController.js';
+import { getAdminDashboard } from '../controllers/adminDashboardController.js';
 import { adminMiddleware } from '../middleware/adminMiddleware.js';
 
 const router = Router();
@@ -43,5 +44,8 @@ router.get('/reports/quantity-transferred/pdf', downloadQuantityTransferredPdfAd
 // Admin notifications
 router.get('/notifications', getAdminNotifications);
 router.put('/notifications/:id/read', markNotificationRead);
+
+// Admin dashboard
+router.get('/dashboard', getAdminDashboard);
 
 export default router;

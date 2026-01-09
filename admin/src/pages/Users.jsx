@@ -105,7 +105,16 @@ export default function Users() {
   return (
     <>
       {/* BUSINESS MANAGEMENT */}
-      <div className="space-y-10">
+      <div>
+        <div className="flex items-start justify-between">
+          <div>
+            <h1 className="text-2xl font-semibold">Users</h1>
+            <p className="text-sm text-white/60 mt-1">Manage business requests and approved businesses.</p>
+          </div>
+        </div>
+
+        <div className="mt-6" />
+
         <div className="flex items-start justify-between">
           <div>
             <h2 className="text-lg font-semibold">Business Requests (Pending)</h2>
@@ -121,9 +130,9 @@ export default function Users() {
           </button>
         </div>
 
-        {error ? <p className="text-sm text-red-400">{error}</p> : null}
+        {error ? <p className="text-sm text-red-400 mt-4">{error}</p> : null}
 
-        <div className="rounded-2xl bg-white/5 border border-white/10 backdrop-blur-xl overflow-hidden">
+        <div className="mt-6 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-xl overflow-hidden">
           <div className="grid grid-cols-12 gap-4 px-6 py-4 text-xs text-white/60 border-b border-white/10">
             <div className="col-span-3">Business Name</div>
             <div className="col-span-3">Email</div>
@@ -220,16 +229,14 @@ export default function Users() {
           )}
         </div>
 
-        <div className="pt-2" />
-
-        <div className="flex items-start justify-between">
+        <div className="mt-6 flex items-start justify-between">
           <div>
             <h2 className="text-lg font-semibold">Businesses (Approved)</h2>
             <p className="text-sm text-white/60 mt-1">Active businesses that can use the platform.</p>
           </div>
         </div>
 
-        <div className="rounded-2xl bg-white/5 border border-white/10 backdrop-blur-xl overflow-hidden">
+        <div className="mt-6 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-xl overflow-hidden">
           <div className="grid grid-cols-12 gap-4 px-6 py-4 text-xs text-white/60 border-b border-white/10">
             <div className="col-span-4">Business Name</div>
             <div className="col-span-3">Joined Date</div>
