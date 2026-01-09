@@ -28,11 +28,17 @@ export const AuthProvider = ({ children }) => {
 							setUser(me.user);
 						}
 					} catch (err) {
-						console.warn('Session validation failed', err);
-						localStorage.removeItem(AUTH_STORAGE_KEY);
-						if (isMounted) {
-							setUser(null);
-							setToken(null);
+						const status = err?.status;
+						if (status === 401 || status === 403) {
+							console.warn('Session invalid, clearing', err);
+							localStorage.removeItem(AUTH_STORAGE_KEY);
+							if (isMounted) {
+								setUser(null);
+								setToken(null);
+							}
+						} else {
+							// Keep existing session during transient failures (network/5xx)
+							console.warn('Session validation skipped (transient)', err);
 						}
 					}
 				} catch (err) {

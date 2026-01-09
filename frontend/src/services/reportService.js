@@ -1,6 +1,9 @@
 import apiClient from './apiClient.js';
 
-const BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
+const RAW_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+const BASE_URL = (RAW_BASE_URL && String(RAW_BASE_URL).trim())
+  ? String(RAW_BASE_URL).trim().replace(/\/+$/, '')
+  : (import.meta.env.DEV ? 'http://localhost:5000' : '');
 const AUTH_STORAGE_KEY = 'revault_auth';
 
 const getToken = () => {
@@ -27,6 +30,9 @@ export const getCompletedTransactionsReport = () => apiClient.get('/reports/comp
 export const getQuantityTransferredReport = () => apiClient.get('/reports/quantity-transferred');
 
 const fetchBlob = async (path) => {
+  if (!BASE_URL) {
+    throw new Error('VITE_API_BASE_URL is not set');
+  }
   const res = await fetch(`${BASE_URL}${path}`, {
     headers: { ...authHeaders() },
   });

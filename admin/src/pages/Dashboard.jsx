@@ -25,7 +25,10 @@ export default function Dashboard() {
   const [revenueData, setRevenueData] = useState([]);
   const [categoryData, setCategoryData] = useState([]);
 
-  const apiRange = useMemo(() => (range === "This month" ? "this_month" : "other"), [range]);
+  const apiRange = useMemo(
+    () => (range === "This month" ? "this_month" : "other"),
+    [range]
+  );
 
   useEffect(() => {
     let cancelled = false;
@@ -43,12 +46,21 @@ export default function Dashboard() {
           totalVisitors: Number(data?.cards?.totalVisitors || 0),
           netProfit: Number(data?.cards?.netProfit || 0),
         });
-        setRevenueData(Array.isArray(data?.revenueData) ? data.revenueData : []);
-        setCategoryData(Array.isArray(data?.categoryData) ? data.categoryData : []);
+        setRevenueData(
+          Array.isArray(data?.revenueData) ? data.revenueData : []
+        );
+        setCategoryData(
+          Array.isArray(data?.categoryData) ? data.categoryData : []
+        );
       } catch (err) {
         console.error("Failed to load admin dashboard", err);
         if (!cancelled) {
-          setCards({ totalRevenue: 0, totalOrders: 0, totalVisitors: 0, netProfit: 0 });
+          setCards({
+            totalRevenue: 0,
+            totalOrders: 0,
+            totalVisitors: 0,
+            netProfit: 0,
+          });
           setRevenueData([]);
           setCategoryData([]);
         }
@@ -80,7 +92,9 @@ export default function Dashboard() {
         <div className="relative flex items-center gap-2 px-4 h-[40px] rounded-xl bg-white/5 border border-white/10 text-sm text-white/70">
           <Calendar size={16} />
           <span className="text-sm text-white/70">{range}</span>
-          <span className="pointer-events-none select-none text-white/70">&gt;</span>
+          <span className="pointer-events-none select-none text-white/70">
+            &gt;
+          </span>
 
           <select
             aria-label="Date range"
@@ -98,7 +112,9 @@ export default function Dashboard() {
       <div className="grid grid-cols-4 gap-6 mb-6">
         <div className="h-[110px] rounded-2xl bg-white p-5 text-black">
           <p className="text-sm opacity-60">Total revenue</p>
-          <h2 className="text-2xl font-semibold mt-2">$ {formatMoney(cards.totalRevenue)}</h2>
+          <h2 className="text-2xl font-semibold mt-2">
+            $ {formatMoney(cards.totalRevenue)}
+          </h2>
           <span className="text-xs text-green-600">+2.5%</span>
         </div>
 
@@ -110,13 +126,17 @@ export default function Dashboard() {
 
         <div className="h-[110px] rounded-2xl bg-white/5 p-5 backdrop-blur-xl border border-white/10">
           <p className="text-sm opacity-60">Total visitors</p>
-          <h2 className="text-2xl font-semibold mt-2">{cards.totalVisitors.toLocaleString()}</h2>
+          <h2 className="text-2xl font-semibold mt-2">
+            {cards.totalVisitors.toLocaleString()}
+          </h2>
           <span className="text-xs text-red-400">-2.1%</span>
         </div>
 
         <div className="h-[110px] rounded-2xl bg-white/5 p-5 backdrop-blur-xl border border-white/10">
           <p className="text-sm opacity-60">Net profit</p>
-          <h2 className="text-2xl font-semibold mt-2">$ {formatMoney(cards.netProfit)}</h2>
+          <h2 className="text-2xl font-semibold mt-2">
+            $ {formatMoney(cards.netProfit)}
+          </h2>
           <span className="text-xs text-green-400">+5.2%</span>
         </div>
       </div>
@@ -159,8 +179,6 @@ export default function Dashboard() {
           </ResponsiveContainer>
         </div>
       </div>
-
-      <p className="mt-10 text-sm text-white/60">Admin overview and platform statistics.</p>
     </>
   );
 }

@@ -16,6 +16,17 @@ const app = express();
 // Connect to MongoDB
 connectDB();
 
+if (config.nodeEnv === 'production') {
+  if (!config.mongoURI) {
+    console.error('Missing MONGO_URI');
+    process.exit(1);
+  }
+  if (!config.jwtSecret) {
+    console.error('Missing JWT_SECRET');
+    process.exit(1);
+  }
+}
+
 // Middleware
 app.use(cors()); // Enable CORS for all routes
 app.use(express.json()); // Parse JSON request bodies

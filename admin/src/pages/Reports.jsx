@@ -1,7 +1,10 @@
 import { useState } from "react";
 import { getAdminSession } from "../services/adminService.js";
 
-const BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:5000";
+const RAW_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+const BASE_URL = (RAW_BASE_URL && String(RAW_BASE_URL).trim())
+  ? String(RAW_BASE_URL).trim().replace(/\/+$/, "")
+  : (import.meta.env.DEV ? "http://localhost:5000" : "");
 
 const REPORTS = [
   {
@@ -31,6 +34,10 @@ export default function Reports() {
   const download = async (path, suggestedName) => {
     const { token } = getAdminSession();
     if (!token) return;
+    if (!BASE_URL) {
+      setError("VITE_API_BASE_URL is not set");
+      return;
+    }
 
     setError("");
     setDownloading(path);

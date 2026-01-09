@@ -1,4 +1,7 @@
-const BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
+const RAW_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+const BASE_URL = (RAW_BASE_URL && String(RAW_BASE_URL).trim())
+	? String(RAW_BASE_URL).trim().replace(/\/+$/, '')
+	: (import.meta.env.DEV ? 'http://localhost:5000' : '');
 const AUTH_STORAGE_KEY = 'revault_auth';
 
 const getToken = () => {
@@ -14,10 +17,15 @@ const getToken = () => {
 };
 
 const request = async (path, { method = 'GET', body, headers = {} } = {}) => {
+ if (!BASE_URL) {
+  throw new Error('VITE_API_BASE_URL is not set');
+ }
  const token = getToken();
  const isFormData = body instanceof FormData;
 
- const res = await fetch(`${BASE_URL}${path}`, {
+ const normalizedPath = String(path || '').startsWith('/') ? String(path || '') : `/${path}`;
+
+ const res = await fetch(`${BASE_URL}${normalizedPath}`, {
   method,
   headers: {
    ...(isFormData ? {} : { 'Content-Type': 'application/json' }),
@@ -29,7 +37,10 @@ const request = async (path, { method = 'GET', body, headers = {} } = {}) => {
 
 	const data = await res.json().catch(() => ({}));
 	if (!res.ok) {
-		throw new Error(data?.message || 'Request failed');
+		const err = new Error(data?.message || 'Request failed');
+		err.status = res.status;
+		err.data = data;
+		throw err;
 	}
 	return data;
 };

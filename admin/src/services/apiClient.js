@@ -1,4 +1,7 @@
-const BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
+const RAW_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+const BASE_URL = (RAW_BASE_URL && String(RAW_BASE_URL).trim())
+  ? String(RAW_BASE_URL).trim().replace(/\/+$/, '')
+  : (import.meta.env.DEV ? 'http://localhost:5000' : '');
 const AUTH_STORAGE_KEY = 'revault_admin_auth';
 
 const getToken = () => {
@@ -13,8 +16,12 @@ const getToken = () => {
 };
 
 const request = async (path, { method = 'GET', body } = {}) => {
+  if (!BASE_URL) {
+    throw new Error('VITE_API_BASE_URL is not set');
+  }
   const token = getToken();
-  const res = await fetch(`${BASE_URL}${path}`, {
+  const normalizedPath = String(path || '').startsWith('/') ? String(path || '') : `/${path}`;
+  const res = await fetch(`${BASE_URL}${normalizedPath}`, {
     method,
     headers: {
       'Content-Type': 'application/json',
