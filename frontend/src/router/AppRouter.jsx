@@ -52,6 +52,7 @@ const AppRouter = () => (
 		>
 			<Route path="dashboard" element={<Dashboard />} />
 			<Route path="inventory/add" element={<AddInventory />} />
+			<Route path="inventory/update/:id" element={<AddInventory />} />
 			<Route path="inventory/my" element={<MyInventory />} />
 			<Route path="requests/incoming" element={<IncomingRequests />} />
 			<Route path="requests/my" element={<MyRequests />} />

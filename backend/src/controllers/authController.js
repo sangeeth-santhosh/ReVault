@@ -1,5 +1,6 @@
 import User from '../models/User.js';
 import { createToken } from '../utils/tokenUtils.js';
+import Notification from '../models/Notification.js';
 
 const buildUserResponse = (user) => ({
   id: user._id,
@@ -59,6 +60,17 @@ export const register = async (req, res) => {
         };
 
         await existing.save();
+
+        try {
+          await Notification.create({
+            type: 'business_request',
+            message: `New business request from ${existing.businessName || 'a business'}`,
+            isRead: false,
+          });
+        } catch (notifyErr) {
+          console.error('register notification error', notifyErr);
+        }
+
         return res.status(201).json({
           success: true,
           user: buildUserResponse(existing),
@@ -84,6 +96,16 @@ export const register = async (req, res) => {
       status: 'pending',
       appliedAt: new Date(),
     });
+
+    try {
+      await Notification.create({
+        type: 'business_request',
+        message: `New business request from ${user.businessName || 'a business'}`,
+        isRead: false,
+      });
+    } catch (notifyErr) {
+      console.error('register notification error', notifyErr);
+    }
 
     return res.status(201).json({
       success: true,

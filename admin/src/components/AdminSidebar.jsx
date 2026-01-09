@@ -1,10 +1,12 @@
 import { createElement } from "react";
-import { BarChart2, Home, LogOut, Users } from "lucide-react";
+import { ArrowLeftRight, BarChart2, Boxes, Home, LogOut, Users } from "lucide-react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { adminLogout } from "../services/adminService.js";
 
 const sidebarItems = [
   { id: "home", icon: Home, to: "/admin" },
+  { id: "inventory", icon: Boxes, to: "/admin/inventory" },
+  { id: "transactions", icon: ArrowLeftRight, to: "/admin/transactions" },
   { id: "chart", icon: BarChart2, to: "/admin/reports" },
   { id: "users", icon: Users, to: "/admin/users" },
 ];

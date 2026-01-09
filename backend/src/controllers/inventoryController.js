@@ -1,5 +1,6 @@
 import Inventory from '../models/Inventory.js';
 import { cloudinary, cloudinaryUploadOptions } from '../config/cloudinary.js';
+import Notification from '../models/Notification.js';
 
 const uploadBufferToCloudinary = (file) =>
   new Promise((resolve, reject) => {
@@ -94,6 +95,17 @@ export const addInventory = async (req, res) => {
       images: uploadedUrls,
       status: 'available',
     });
+
+    try {
+      const businessLabel = req.user?.businessName || req.user?.name || 'a business';
+      await Notification.create({
+        type: 'inventory',
+        message: `New inventory added by ${businessLabel}`,
+        isRead: false,
+      });
+    } catch (notifyErr) {
+      console.error('addInventory notification error', notifyErr);
+    }
     return res.status(201).json({ success: true, data: item });
   } catch (err) {
     console.error('addInventory error', err);

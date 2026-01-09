@@ -2,6 +2,8 @@ import mongoose from 'mongoose';
 import Request from '../models/Request.js';
 import Inventory from '../models/Inventory.js';
 import Transaction from '../models/Transaction.js';
+import User from '../models/User.js';
+import Notification from '../models/Notification.js';
 
 export const sendRequest = async (req, res) => {
   try {
@@ -175,6 +177,20 @@ export const completeRequest = async (req, res) => {
     );
 
     await session.commitTransaction();
+
+    try {
+      const sellerName = req.user?.businessName || req.user?.name || 'A';
+      const buyer = await User.findById(request.buyer).select('businessName name');
+      const buyerName = buyer?.businessName || buyer?.name || 'B';
+      await Notification.create({
+        type: 'transaction',
+        message: `Transaction completed between ${sellerName} & ${buyerName}`,
+        isRead: false,
+      });
+    } catch (notifyErr) {
+      console.error('completeRequest notification error', notifyErr);
+    }
+
     return res.json({ success: true, data: request, transaction });
   } catch (err) {
     await session.abortTransaction();

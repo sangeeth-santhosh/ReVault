@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import inventoryService from '../../services/inventoryService.js';
 
 const DRAFT_STORAGE_KEY = 'revault_add_inventory_draft';
@@ -31,6 +31,8 @@ const CONDITION_OPTIONS = [
 
 const AddInventory = () => {
   const navigate = useNavigate();
+  const { id } = useParams();
+  const isEdit = Boolean(id);
   const [form, setForm] = useState({
     name: '',
     description: '',
@@ -43,6 +45,8 @@ const AddInventory = () => {
   });
   const [images, setImages] = useState(Array(4).fill(null));
   const [previews, setPreviews] = useState(Array(4).fill(null));
+  const [keepImageUrls, setKeepImageUrls] = useState(Array(4).fill(null));
+  const [loadingItem, setLoadingItem] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
@@ -52,6 +56,7 @@ const AddInventory = () => {
   const fileInputsRef = useRef([]);
 
   useEffect(() => {
+    if (isEdit) return;
     try {
       const raw = localStorage.getItem(DRAFT_STORAGE_KEY);
       if (!raw) return;
@@ -70,6 +75,59 @@ const AddInventory = () => {
       // ignore corrupted drafts
     }
   }, []);
+
+  useEffect(() => {
+    if (!isEdit) return;
+
+    const loadItem = async () => {
+      setLoadingItem(true);
+      setError('');
+      try {
+        const res = await inventoryService.getById(id);
+        const item = res?.data;
+        if (!item) {
+          setError('Item not found');
+          return;
+        }
+
+        const expiry = item?.expiryDate
+          ? new Date(item.expiryDate).toISOString().slice(0, 10)
+          : (item?.expiry || '');
+
+        setForm({
+          name: item?.name || item?.title || '',
+          description: item?.description || '',
+          category: item?.category || '',
+          quantity: item?.quantity ?? '',
+          unit: item?.unit || '',
+          expiryDate: expiry,
+          condition: item?.condition || '',
+          location: item?.location || '',
+        });
+
+        const urls = Array.isArray(item?.images) ? item.images.slice(0, 4) : [];
+        const nextKeep = Array(4).fill(null);
+        const nextPreviews = Array(4).fill(null);
+        urls.forEach((u, idx) => {
+          nextKeep[idx] = u;
+          nextPreviews[idx] = u;
+        });
+
+        setKeepImageUrls(nextKeep);
+        setPreviews(nextPreviews);
+        setImages(Array(4).fill(null));
+        setDraftSaved(false);
+        setHasUnsavedChanges(false);
+        setDraftNote('');
+      } catch (err) {
+        setError(err?.message || 'Could not load item');
+      } finally {
+        setLoadingItem(false);
+      }
+    };
+
+    loadItem();
+  }, [id, isEdit]);
 
   const validateForm = () => {
     if (!form.name.trim()) return 'Name is required';
@@ -109,10 +167,11 @@ const AddInventory = () => {
       location: '',
     });
     previews.forEach((url) => {
-      if (url) URL.revokeObjectURL(url);
+      if (url && String(url).startsWith('blob:')) URL.revokeObjectURL(url);
     });
     setImages(Array(4).fill(null));
     setPreviews(Array(4).fill(null));
+    setKeepImageUrls(Array(4).fill(null));
   };
 
   const handleChange = (e) => {
@@ -136,9 +195,15 @@ const AddInventory = () => {
       return next;
     });
 
+    setKeepImageUrls((prev) => {
+      const next = [...prev];
+      next[slotIndex] = null;
+      return next;
+    });
+
     setPreviews((prev) => {
       const next = [...prev];
-      if (next[slotIndex]) URL.revokeObjectURL(next[slotIndex]);
+      if (next[slotIndex] && String(next[slotIndex]).startsWith('blob:')) URL.revokeObjectURL(next[slotIndex]);
       next[slotIndex] = URL.createObjectURL(firstImage);
       return next;
     });
@@ -155,9 +220,14 @@ const AddInventory = () => {
       next[index] = null;
       return next;
     });
+    setKeepImageUrls((prev) => {
+      const next = [...prev];
+      next[index] = null;
+      return next;
+    });
     setPreviews((prev) => {
       const next = [...prev];
-      if (next[index]) URL.revokeObjectURL(next[index]);
+      if (next[index] && String(next[index]).startsWith('blob:')) URL.revokeObjectURL(next[index]);
       next[index] = null;
       return next;
     });
@@ -205,7 +275,7 @@ const AddInventory = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!draftSaved || hasUnsavedChanges) {
+    if (!isEdit && (!draftSaved || hasUnsavedChanges)) {
       setError('Please save the draft before confirming');
       return;
     }
@@ -234,30 +304,43 @@ const AddInventory = () => {
         formData.append('location', form.location.trim());
       }
 
+      if (isEdit) {
+        const kept = keepImageUrls.filter(Boolean);
+        formData.append('images', JSON.stringify(kept));
+      }
+
       images.filter(Boolean).forEach((file) => {
         formData.append('images', file);
       });
 
-      await inventoryService.add(formData);
-      setMessage('Listing created successfully');
-      clearDraft();
-      resetFormAndImages();
-      setTimeout(() => navigate('/inventory/my'), 800);
+      if (isEdit) {
+        await inventoryService.update(id, formData);
+        setMessage('Listing updated successfully');
+        resetFormAndImages();
+        setTimeout(() => navigate('/inventory/my'), 800);
+      } else {
+        await inventoryService.add(formData);
+        setMessage('Listing created successfully');
+        clearDraft();
+        resetFormAndImages();
+        setTimeout(() => navigate('/inventory/my'), 800);
+      }
     } catch (err) {
-      setError(err?.message || 'Could not create listing');
+      setError(err?.message || (isEdit ? 'Could not update listing' : 'Could not create listing'));
     } finally {
       setSubmitting(false);
     }
   };
 
-  const canConfirm = draftSaved && !hasUnsavedChanges;
+  const canConfirm = isEdit ? true : (draftSaved && !hasUnsavedChanges);
 
   return (
     <section className="space-y-6">
       <div className="space-y-1">
-        <h1 className="text-2xl font-semibold text-gray-900">Add inventory</h1>
-        <p className="text-sm text-gray-600">Create a new surplus listing with key specs.</p>
+        <h1 className="text-2xl font-semibold text-gray-900">{isEdit ? 'Edit inventory' : 'Add inventory'}</h1>
+        <p className="text-sm text-gray-600">{isEdit ? 'Update your listing details.' : 'Create a new surplus listing with key specs.'}</p>
       </div>
+      {loadingItem ? <p className="text-sm text-gray-600">Loading…</p> : null}
       <form onSubmit={handleSubmit} className="space-y-4 rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
         <div className="grid gap-4 md:grid-cols-2">
           <div className="space-y-1">

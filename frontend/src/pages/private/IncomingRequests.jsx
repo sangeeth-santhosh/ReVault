@@ -1,6 +1,17 @@
 import { useEffect, useState } from 'react';
 import requestService from '../../services/requestService.js';
 
+const formatShortDate = (value) => {
+  if (!value) return '—';
+  const d = new Date(value);
+  if (Number.isNaN(d.getTime())) return '—';
+  const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+  const day = String(d.getDate()).padStart(2, '0');
+  const month = months[d.getMonth()] || '';
+  const year = d.getFullYear();
+  return month ? `${day} ${month} ${year}` : `${day} ${year}`;
+};
+
 const IncomingRequests = () => {
   const [requests, setRequests] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -60,8 +71,19 @@ const IncomingRequests = () => {
           <article key={req._id || req.id} className="rounded-lg border border-gray-200 bg-white p-4 shadow-sm">
             <div className="flex items-center justify-between">
               <div>
-                <h3 className="text-lg font-semibold text-gray-900">{req.inventory?.title || req.item || 'Inventory'}</h3>
+                <h3 className="text-lg font-semibold text-gray-900">{req.inventory?.title || req.inventory?.name || req.item || 'Inventory'}</h3>
                 <p className="text-sm text-gray-600">From {req.buyer?.name || req.from || 'Buyer'}</p>
+                <p className="text-sm text-gray-600">
+                  {(() => {
+                    const qtyRaw = req?.requestedQuantity ?? req?.quantity;
+                    const qty = Number(qtyRaw);
+                    const qtyText = Number.isFinite(qty) ? qty : '—';
+                    const unit = req?.inventory?.unit || 'units';
+                    const qtyWithUnit = qtyText === '—' ? '—' : `${qtyText} ${unit}`;
+                    const dateText = formatShortDate(req?.createdAt || req?.requestedAt);
+                    return `Requested: ${qtyWithUnit} · ${dateText}`;
+                  })()}
+                </p>
               </div>
               <div className="flex items-center gap-2 text-sm">
                 <span className="rounded-full bg-gray-100 px-3 py-1 text-gray-700">{req.status || 'pending'}</span>

@@ -377,6 +377,141 @@ export const downloadQuantityTransferredPdf = async (req, res) => {
   }
 };
 
+// ---------------- Admin Downloads (Global) ----------------
+export const downloadInventoryPostedCsvAdmin = async (_req, res) => {
+  try {
+    const items = await Inventory.find().select('title name category quantity createdAt');
+    const rows = items.map((inv) => ({
+      itemName: inv.title || inv.name || 'Item',
+      category: inv.category || '—',
+      quantity: inv.quantity ?? 0,
+      createdAt: inv.createdAt,
+    }));
+
+    const parser = new Parser({
+      fields: [
+        { label: 'Item', value: 'itemName' },
+        { label: 'Category', value: 'category' },
+        { label: 'Quantity', value: 'quantity' },
+        { label: 'Created', value: (row) => formatDate(row.createdAt) },
+      ],
+    });
+    const csv = parser.parse(rows);
+    res.setHeader('Content-Type', 'text/csv');
+    res.setHeader('Content-Disposition', 'attachment; filename="inventory-posted-all.csv"');
+    return res.status(200).send(csv);
+  } catch (err) {
+    console.error('downloadInventoryPostedCsvAdmin error', err);
+    return res.status(500).json({ success: false, message: 'Could not generate CSV' });
+  }
+};
+
+export const downloadInventoryPostedPdfAdmin = async (_req, res) => {
+  try {
+    const items = await Inventory.find().select('title name category quantity createdAt');
+
+    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader('Content-Disposition', 'attachment; filename="inventory-posted-all.pdf"');
+
+    const doc = new PDFDocument({ size: 'A4', margin: 45 });
+    doc.pipe(res);
+    doc.fontSize(16).text('Inventory Posted (All Businesses)', { align: 'left' });
+    doc.moveDown(0.5);
+
+    const rows = items.map((inv) => ({
+      itemName: inv.title || inv.name || 'Item',
+      category: inv.category || '—',
+      quantity: inv.quantity ?? 0,
+      createdAt: inv.createdAt,
+    }));
+
+    renderTable(doc, [
+      { key: 'itemName', label: 'Item Name', width: 220 },
+      { key: 'category', label: 'Category', width: 120 },
+      { key: 'quantity', label: 'Quantity', width: 80, align: 'center' },
+      { key: 'createdAt', label: 'Created Date', width: 85, align: 'center', format: formatDate, maxChars: 20 },
+    ], rows);
+
+    doc.end();
+  } catch (err) {
+    console.error('downloadInventoryPostedPdfAdmin error', err);
+    return res.status(500).json({ success: false, message: 'Could not generate PDF' });
+  }
+};
+
+export const downloadCompletedTransactionsCsvAdmin = async (_req, res) => {
+  try {
+    const tx = await Transaction.find({ status: 'completed' })
+      .populate({ path: 'request', populate: { path: 'inventory', select: 'title name' } })
+      .populate('buyer', 'name businessName')
+      .populate('seller', 'name businessName');
+
+    const rows = tx.map((t) => ({
+      itemName: t.request?.inventory?.title || t.request?.inventory?.name || 'Item',
+      quantity: t.quantity || t.request?.quantity || 0,
+      sellerName: t.seller?.businessName || t.seller?.name || 'Seller',
+      buyerName: t.buyer?.businessName || t.buyer?.name || 'Buyer',
+      completedAt: t.updatedAt || t.createdAt,
+    }));
+
+    const parser = new Parser({
+      fields: [
+        { label: 'Item', value: 'itemName' },
+        { label: 'Quantity', value: 'quantity' },
+        { label: 'Seller', value: 'sellerName' },
+        { label: 'Buyer', value: 'buyerName' },
+        { label: 'Completed', value: (row) => formatDate(row.completedAt) },
+      ],
+    });
+    const csv = parser.parse(rows);
+    res.setHeader('Content-Type', 'text/csv');
+    res.setHeader('Content-Disposition', 'attachment; filename="completed-transactions-all.csv"');
+    return res.status(200).send(csv);
+  } catch (err) {
+    console.error('downloadCompletedTransactionsCsvAdmin error', err);
+    return res.status(500).json({ success: false, message: 'Could not generate CSV' });
+  }
+};
+
+export const downloadCompletedTransactionsPdfAdmin = async (_req, res) => {
+  try {
+    const tx = await Transaction.find({ status: 'completed' })
+      .populate({ path: 'request', populate: { path: 'inventory', select: 'title name' } })
+      .populate('buyer', 'name businessName')
+      .populate('seller', 'name businessName');
+
+    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader('Content-Disposition', 'attachment; filename="completed-transactions-all.pdf"');
+    const doc = new PDFDocument({ size: 'A4', margin: 45 });
+    doc.pipe(res);
+    doc.fontSize(16).text('Completed Transactions (All Businesses)', { align: 'left' });
+    doc.moveDown(0.5);
+    const rows = tx.map((t) => ({
+      itemName: t.request?.inventory?.title || t.request?.inventory?.name || 'Item',
+      quantity: t.quantity || t.request?.quantity || 0,
+      sellerName: t.seller?.businessName || t.seller?.name || 'Seller',
+      buyerName: t.buyer?.businessName || t.buyer?.name || 'Buyer',
+      completedAt: t.updatedAt || t.createdAt,
+    }));
+
+    renderTable(doc, [
+      { key: 'itemName', label: 'Item Name', width: 165 },
+      { key: 'quantity', label: 'Quantity', width: 70, align: 'center' },
+      { key: 'sellerName', label: 'Sender', width: 110 },
+      { key: 'buyerName', label: 'Receiver', width: 110 },
+      { key: 'completedAt', label: 'Completed Date', width: 50, align: 'center', format: formatDate, maxChars: 20 },
+    ], rows);
+
+    doc.end();
+  } catch (err) {
+    console.error('downloadCompletedTransactionsPdfAdmin error', err);
+    return res.status(500).json({ success: false, message: 'Could not generate PDF' });
+  }
+};
+
+export const downloadQuantityTransferredCsvAdmin = downloadQuantityTransferredCsv;
+export const downloadQuantityTransferredPdfAdmin = downloadQuantityTransferredPdf;
+
 // Keep the old summary for dashboard compatibility
 export const getTransactionSummary = async (req, res) => {
   try {
