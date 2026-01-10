@@ -1,13 +1,14 @@
 {
   "name": "revoult",
   "private": true,
+  "packageManager": "pnpm@8.15.4",
   "workspaces": [
     "backend",
     "frontend",
     "admin"
   ],
   "scripts": {
-    "dev": "npx concurrently -k -n backend,frontend,admin -c blue,green,magenta \"npm --prefix backend run dev\" \"npm --prefix frontend run dev\" \"npm --prefix admin run dev\""
+    "dev": "concurrently -k -n backend,frontend,admin -c blue,green,magenta \"pnpm -C backend dev\" \"pnpm -C frontend dev\" \"pnpm -C admin dev\""
   },
   "devDependencies": {
     "concurrently": "^9.2.0"
