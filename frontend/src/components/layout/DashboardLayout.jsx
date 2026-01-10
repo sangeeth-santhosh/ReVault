@@ -1,7 +1,7 @@
 import { Outlet } from 'react-router-dom';
-import PrivateSidebar from '../ui/privateSidebar.jsx';
-import PrivateHeader from '../ui/privateHeader.jsx';
-import PrivateMain from '../ui/privateMain.jsx';
+import PrivateSidebar from '../ui/PrivateSidebar.jsx';
+import PrivateHeader from '../ui/PrivateHeader.jsx';
+import PrivateMain from '../ui/PrivateMain.jsx';
 
 const DashboardLayout = () => {
   return (
