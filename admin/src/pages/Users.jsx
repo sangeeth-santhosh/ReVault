@@ -197,27 +197,23 @@ export default function Users() {
                           <div>
                             <p className="text-xs text-white/60">Business Name</p>
                             <p className="mt-1">{u?.businessName || "—"}</p>
-                          </div>
-                          <div>
-                            <p className="text-xs text-white/60">Email</p>
-                            <p className="mt-1 text-white/70">{u?.email || "—"}</p>
-                          </div>
-                          <div>
-                            <p className="text-xs text-white/60">Phone</p>
-                            <p className="mt-1 text-white/70">{u?.phone || "—"}</p>
-                          </div>
-                          <div>
-                            <p className="text-xs text-white/60">Applied Date</p>
-                            <p className="mt-1 text-white/70">{formatDate(appliedDate)}</p>
-                          </div>
-                          <div className="col-span-2">
-                            <p className="text-xs text-white/60">Address</p>
+                            <p className="text-xs text-white/60 mt-4">Username</p>
+                            <p className="mt-1 text-white/70">{u?.username || u?.userName || u?.name || "—"}</p>
+                            <p className="text-xs text-white/60 mt-4">Address</p>
                             <p className="mt-1 text-white/70">
                               {u?.address?.street || "—"}
                               {u?.address?.city ? `, ${u.address.city}` : ""}
                               {u?.address?.state ? `, ${u.address.state}` : ""}
                               {u?.address?.pincode ? ` - ${u.address.pincode}` : ""}
                             </p>
+                          </div>
+                          <div>
+                            <p className="text-xs text-white/60">Email</p>
+                            <p className="mt-1 text-white/70">{u?.email || "—"}</p>
+                            <p className="text-xs text-white/60 mt-4">Phone</p>
+                            <p className="mt-1 text-white/70">{u?.phone || "—"}</p>
+                            <p className="text-xs text-white/60 mt-4">Applied Date</p>
+                            <p className="mt-1 text-white/70">{formatDate(appliedDate)}</p>
                           </div>
                         </div>
                       </div>
@@ -306,27 +302,23 @@ export default function Users() {
                           <div>
                             <p className="text-xs text-white/60">Business Name</p>
                             <p className="mt-1">{u?.businessName || "—"}</p>
-                          </div>
-                          <div>
-                            <p className="text-xs text-white/60">Email</p>
-                            <p className="mt-1 text-white/70">{u?.email || "—"}</p>
-                          </div>
-                          <div>
-                            <p className="text-xs text-white/60">Phone</p>
-                            <p className="mt-1 text-white/70">{u?.phone || "—"}</p>
-                          </div>
-                          <div>
-                            <p className="text-xs text-white/60">Joined Date</p>
-                            <p className="mt-1 text-white/70">{formatDate(joinedDate)}</p>
-                          </div>
-                          <div className="col-span-2">
-                            <p className="text-xs text-white/60">Address</p>
+                            <p className="text-xs text-white/60 mt-4">Username</p>
+                            <p className="mt-1 text-white/70">{u?.username || u?.userName || u?.name || "—"}</p>
+                            <p className="text-xs text-white/60 mt-4">Address</p>
                             <p className="mt-1 text-white/70">
                               {u?.address?.street || "—"}
                               {u?.address?.city ? `, ${u.address.city}` : ""}
                               {u?.address?.state ? `, ${u.address.state}` : ""}
                               {u?.address?.pincode ? ` - ${u.address.pincode}` : ""}
                             </p>
+                          </div>
+                          <div>
+                            <p className="text-xs text-white/60">Email</p>
+                            <p className="mt-1 text-white/70">{u?.email || "—"}</p>
+                            <p className="text-xs text-white/60 mt-4">Phone</p>
+                            <p className="mt-1 text-white/70">{u?.phone || "—"}</p>
+                            <p className="text-xs text-white/60 mt-4">Joined Date</p>
+                            <p className="mt-1 text-white/70">{formatDate(joinedDate)}</p>
                           </div>
                         </div>
                       </div>

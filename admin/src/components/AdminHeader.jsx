@@ -152,9 +152,13 @@ export default function AdminHeader({
       </div>
 
       <div className="flex items-center gap-4">
-        <div className="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center">
+        <button
+          type="button"
+          aria-label="Settings"
+          className="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center"
+        >
           <Settings size={18} className="text-white/70" />
-        </div>
+        </button>
 
         <div ref={popoverRef} className="relative z-50">
           <button
