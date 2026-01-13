@@ -17,6 +17,7 @@ import Transactions from '../pages/private/Transactions.jsx';
 import Reports from '../pages/private/Reports.jsx';
 import Settings from '../pages/private/Settings.jsx';
 import useAuth from '../hooks/useAuth.js';
+import DemoLayout from '../components/auth/DemoLayout.jsx';
 
 const ProtectedRoute = ({ children }) => {
 	const { user, loading } = useAuth();
@@ -42,6 +43,8 @@ const AppRouter = () => (
 			<Route path="register" element={<Register />} />
 			<Route path="contact" element={<Contact />} />
 		</Route>
+
+		<Route path="demo" element={<DemoLayout />} />
 
 		<Route
 			element={(
