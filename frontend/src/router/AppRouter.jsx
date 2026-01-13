@@ -1,6 +1,6 @@
 import { Navigate, Route, Routes } from 'react-router-dom';
-import PublicLayout from '../components/layout/PublicLayout.jsx';
-import DashboardLayout from '../components/layout/DashboardLayout.jsx';
+// import PublicLayout from '../components/layout/PublicLayout.jsx';
+// import DashboardLayout from '../components/layout/DashboardLayout.jsx';
 import Home from '../pages/public/Home.jsx';
 import BrowseItems from '../pages/public/BrowseItems.jsx';
 import ItemDetails from '../pages/public/ItemDetails.jsx';
@@ -17,7 +17,6 @@ import Transactions from '../pages/private/Transactions.jsx';
 import Reports from '../pages/private/Reports.jsx';
 import Settings from '../pages/private/Settings.jsx';
 import useAuth from '../hooks/useAuth.js';
-import DemoLayout from '../components/auth/DemoLayout.jsx';
 
 const ProtectedRoute = ({ children }) => {
 	const { user, loading } = useAuth();
@@ -35,7 +34,7 @@ const ProtectedRoute = ({ children }) => {
 
 const AppRouter = () => (
 	<Routes>
-		<Route element={<PublicLayout />}>
+		<Route element={<k />}>
 			<Route index element={<Home />} />
 			<Route path="browse" element={<BrowseItems />} />
 			<Route path="items/:id" element={<ItemDetails />} />
@@ -44,12 +43,10 @@ const AppRouter = () => (
 			<Route path="contact" element={<Contact />} />
 		</Route>
 
-		<Route path="demo" element={<DemoLayout />} />
-
 		<Route
 			element={(
 				<ProtectedRoute>
-					<DashboardLayout />
+					<k />
 				</ProtectedRoute>
 			)}
 		>
