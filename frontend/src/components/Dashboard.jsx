@@ -1,8 +1,8 @@
+import Analytics from "../pages/private/Analytics";
+
 const Dashboard = () => {
     return (
-        <div>
-            <h1>Welcome to the Demo Dashboard</h1>
-        </div>
+        <Analytics />
     );
 };
 

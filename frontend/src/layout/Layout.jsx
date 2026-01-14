@@ -1,8 +1,79 @@
+import { Outlet, useLocation, useNavigate } from 'react-router-dom';
+import { useEffect, useRef } from 'react';
 import Header from '../components/Header.jsx';
-import Outlet from './Outlet.jsx';
-import Sidebar from './Sidebar.jsx';
+import Sidebar from '../components/Sidebar.jsx';
 
 const Layout = () => {
+	const location = useLocation();
+	const navigate = useNavigate();
+	const lastPublicRef = useRef('/');
+	const lastPrivateRef = useRef('/dashboard');
+
+	useEffect(() => {
+		const { pathname, search, hash } = location;
+		const fullPath = `${pathname}${search || ''}${hash || ''}`;
+
+		const isPrivate =
+			pathname === '/dashboard' ||
+			pathname.startsWith('/inventory') ||
+			pathname.startsWith('/requests') ||
+			pathname.startsWith('/chats') ||
+			pathname.startsWith('/transactions') ||
+			pathname.startsWith('/reports') ||
+			pathname.startsWith('/settings');
+
+		if (isPrivate) {
+			lastPrivateRef.current = fullPath;
+		} else {
+			lastPublicRef.current = fullPath;
+		}
+
+		const headerToggle = document.querySelector('header div.fixed button')?.closest('div');
+		if (!headerToggle) return;
+		const buttons = Array.from(headerToggle.querySelectorAll('button'));
+		const dashboardBtn = buttons.find((b) => (b.textContent || '').trim().toLowerCase() === 'dashboard');
+		const websiteBtn = buttons.find((b) => (b.textContent || '').trim().toLowerCase() === 'website');
+
+		const setHeaderMode = (selectedBtn) => {
+			const container = selectedBtn?.closest('div');
+			if (!container) return;
+			const btns = Array.from(container.querySelectorAll('button'));
+			btns.forEach((b) => {
+				const active = b === selectedBtn;
+				b.classList.toggle('bg-white', active);
+				b.classList.toggle('shadow-sm', active);
+				b.classList.toggle('text-black', active);
+				b.classList.toggle('text-[#979797]', !active);
+				b.classList.toggle('rounded-full', true);
+				b.setAttribute('aria-pressed', active ? 'true' : 'false');
+			});
+		};
+
+		if (isPrivate && dashboardBtn) setHeaderMode(dashboardBtn);
+		if (!isPrivate && websiteBtn) setHeaderMode(websiteBtn);
+	}, [location]);
+
+	useEffect(() => {
+		const headerToggle = document.querySelector('header div.fixed button')?.closest('div');
+		if (!headerToggle) return;
+		const buttons = Array.from(headerToggle.querySelectorAll('button'));
+		const dashboardBtn = buttons.find((b) => (b.textContent || '').trim().toLowerCase() === 'dashboard');
+		const websiteBtn = buttons.find((b) => (b.textContent || '').trim().toLowerCase() === 'website');
+
+		const bind = (btn, onClick) => {
+			if (!btn || btn.dataset.routerBound === '1') return;
+			btn.dataset.routerBound = '1';
+			btn.addEventListener('click', onClick);
+		};
+
+		bind(dashboardBtn, () => {
+			navigate(lastPrivateRef.current || '/dashboard', { replace: false });
+		});
+		bind(websiteBtn, () => {
+			navigate('/', { replace: false });
+		});
+	}, [navigate]);
+
 	return (
 		<>
 			<div className="font-sans text-slate-800 h-screen">

@@ -14,14 +14,6 @@ const Layout = () => {
 					</main>
 				</div>
 			</div>
-			<div
-				id="toast"
-				className="fixed bottom-6 right-6 z-50 pointer-events-none opacity-0 translate-y-2 transition-all duration-200 max-sm:left-1/2 max-sm:right-auto max-sm:-translate-x-1/2"
-			>
-				<div className="bg-slate-900 text-white text-sm px-4 py-3 rounded-2xl shadow-xl">
-					<div id="toast-message">Action</div>
-				</div>
-			</div>
 		</>
 	);
 };
