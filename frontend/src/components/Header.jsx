@@ -1,10 +1,25 @@
-import { useEffect } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { createPortal } from "react-dom";
 import Images from "../assets/Images.js";
 import Explore from "./Explore.jsx";
+import useAuth from "../hooks/useAuth.js";
 
 const Header = () => {
   const navigate = useNavigate();
+  const { user, token, logout } = useAuth();
+  const [open, setOpen] = useState(false);
+  const menuRef = useRef(null);
+  const triggerRef = useRef(null);
+  const [menuPos, setMenuPos] = useState({ top: 0, left: 0 });
+
+  const displayName = useMemo(() => {
+    if (!token) return "Login";
+    const name = user?.name || user?.username || user?.email;
+    if (!name) return "User";
+    if (typeof name === "string" && name.includes("@")) return name.split("@")[0];
+    return name;
+  }, [token, user]);
 
   useEffect(() => {
     (function () {
@@ -52,6 +67,61 @@ const Header = () => {
     })();
   }, []);
 
+  useEffect(() => {
+    if (!token && open) setOpen(false);
+  }, [token, open]);
+
+  useEffect(() => {
+    if (!open) return;
+
+    const updatePosition = () => {
+      const el = triggerRef.current;
+      if (!el) return;
+      const rect = el.getBoundingClientRect();
+      const width = 224;
+      const gap = 12;
+      const left = Math.max(8, Math.min(window.innerWidth - width - 8, rect.right - width));
+      const top = Math.min(window.innerHeight - 8, rect.bottom + gap);
+      setMenuPos({ top, left });
+    };
+
+    updatePosition();
+
+    const onPointerDown = (e) => {
+      const t = e.target;
+      if (menuRef.current && menuRef.current.contains(t)) return;
+      if (triggerRef.current && triggerRef.current.contains(t)) return;
+      setOpen(false);
+    };
+
+    const onKeyDown = (e) => {
+      if (e.key === "Escape") setOpen(false);
+    };
+
+    const onAnyScroll = () => {
+      setOpen(false);
+    };
+
+    document.addEventListener("mousedown", onPointerDown, true);
+    document.addEventListener("keydown", onKeyDown);
+    window.addEventListener("resize", updatePosition);
+    window.addEventListener("scroll", onAnyScroll, true);
+    return () => {
+      document.removeEventListener("mousedown", onPointerDown, true);
+      document.removeEventListener("keydown", onKeyDown);
+      window.removeEventListener("resize", updatePosition);
+      window.removeEventListener("scroll", onAnyScroll, true);
+    };
+  }, [open]);
+
+  const onLoginOrUserClick = () => {
+    if (!token) {
+      navigate("/login");
+      return;
+    }
+    setOpen((v) => !v);
+  };
+
   return (
     <>
       <div style={{ position: "sticky", top: 0, zIndex: 30 }}>
@@ -73,12 +143,50 @@ const Header = () => {
             </button>
           </div>
           <div className="flex items-center gap-4">
-            <div className="flex items-center gap-3 pl-4 border-l border-gray-200">
+            <div className="flex items-center gap-3 pl-4 border-l border-gray-200 relative">
               <img
                 src={Images.Spidi}
                 className="w-10 h-10 rounded-full object-cover bg-pink-100"
               />
-              <span className="text-sm font-semibold" onClick={() => navigate("/login")}>Login</span>
+              <span
+                ref={triggerRef}
+                className="text-sm font-semibold cursor-pointer"
+                onClick={onLoginOrUserClick}
+              >
+                {displayName}
+              </span>
+              {token && open
+                ? createPortal(
+                    <div
+                      ref={menuRef}
+                      className="w-56 bg-white border border-gray-200 rounded-2xl shadow-xl p-2 flex flex-col"
+                      style={{ position: "fixed", top: menuPos.top, left: menuPos.left, zIndex: 60 }}
+                      onClick={(e) => {
+                        const btn = e.target?.closest?.('button[data-action-toast="Logged out (demo)"]');
+                        if (!btn) return;
+                        logout();
+                        setOpen(false);
+                      }}
+                    >
+                      <button
+                        type="button"
+                        data-action-toast="Logged out (demo)"
+                        className="mt-auto flex items-center gap-3 px-4 py-3 text-black hover:text-red-500 transition-colors"
+                      >
+                        <svg className="w-5 h-5" fill="none" stroke="#000000" viewBox="0 0 24 24">
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth="2"
+                            d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
+                          ></path>
+                        </svg>
+                        <span className="text-sm font-medium">Log out</span>
+                      </button>
+                    </div>,
+                    document.body
+                  )
+                : null}
             </div>
           </div>
         </header>
