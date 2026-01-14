@@ -1,80 +1,78 @@
-import { useEffect } from "react";
-import { href } from "react-router-dom";
+import { useRef } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
+import useAuth from "../hooks/useAuth.js";
 
 const Sidebar = () => {
-  useEffect(() => {
-    function bindOnce(el, handler) {
-      if (!el || el.dataset.bound === "1") return false;
-      el.dataset.bound = "1";
-      handler(el);
-      return true;
-    }
+  const location = useLocation();
+  const navigate = useNavigate();
+  const { token } = useAuth();
+  const lastNavRef = useRef({ path: "", time: 0 });
 
-    const navLinks = Array.from(
-      document.querySelectorAll("aside nav a[data-sidebar-nav]")
+  const ACCESS_MESSAGE = "Please log in to access this feature";
+
+  const showAccessToast = () => {
+    window.dispatchEvent(
+      new CustomEvent("revault:toast", {
+        detail: { message: ACCESS_MESSAGE },
+      })
     );
-    const ACTIVE = [
-      "bg-blue-600",
-      "text-white",
-      "shadow-lg",
-      "shadow-blue-200",
-    ];
-    const INACTIVE = ["text-black", "hover:bg-gray-50"];
+  };
 
-    function setActive(link) {
-      navLinks.forEach((a) => {
-        a.classList.remove(...ACTIVE);
-        a.classList.add(...INACTIVE);
-        a.removeAttribute("aria-current");
-      });
+  const ACTIVE_CLASS =
+    "flex items-center gap-3 px-4 py-3 bg-blue-600 text-white rounded-2xl shadow-lg shadow-blue-200 transition-all";
+  const INACTIVE_CLASS =
+    "flex items-center gap-3 px-4 py-3 text-black hover:bg-gray-50 rounded-xl transition-all";
 
-      link.classList.add(...ACTIVE);
-      link.classList.remove(...INACTIVE);
-      link.setAttribute("aria-current", "page");
+  const isModifiedClick = (e) =>
+    e.metaKey || e.altKey || e.ctrlKey || e.shiftKey || e.button !== 0;
+
+  const normalizePath = (path) => {
+    if (!path) return "/";
+    return path.startsWith("/") ? path : `/${path}`;
+  };
+
+  const isPathActive = (toPath, currentPath) => {
+    const to = normalizePath(toPath);
+    const current = normalizePath(currentPath);
+    if (to === "/") return current === "/";
+    if (current === to) return true;
+    return current.startsWith(`${to}/`);
+  };
+
+  const handleNavClick = (e, toPath, activeNow) => {
+    if (!token) {
+      e.preventDefault();
+      showAccessToast();
+      return;
     }
+    if (isModifiedClick(e)) return;
+    e.preventDefault();
 
-    navLinks.forEach((a) => {
-      a.addEventListener("click", (e) => {
-        setActive(a);
+    const nextPath = normalizePath(toPath);
+    const now = Date.now();
+    if (activeNow) return;
+    if (lastNavRef.current.path === nextPath && now - lastNavRef.current.time < 400) return;
 
-        const href = a.getAttribute("href") || "";
-        if (!href.startsWith("#")) return;
-        const target = document.querySelector(href);
-        if (!target) return;
-        e.preventDefault();
-        target.scrollIntoView({ behavior: "smooth", block: "start" });
-      });
-    });
+    lastNavRef.current = { path: nextPath, time: now };
+    navigate(nextPath, { replace: false });
+  };
 
-    const seeAllBtn = Array.from(document.querySelectorAll("button")).find(
-      (b) =>
-        (b.textContent || "").replace(/\s+/g, " ").trim().toLowerCase() ===
-        "see all"
-    );
-    if (seeAllBtn) {
-      bindOnce(seeAllBtn, () => {
-        seeAllBtn.addEventListener("click", () => {
-          const target = document.getElementById("section-products");
-          if (target)
-            target.scrollIntoView({ behavior: "smooth", block: "start" });
-        });
-      });
+  const handleQuickActionClick = (e, toPath) => {
+    if (!token) {
+      e.preventDefault();
+      showAccessToast();
+      return;
     }
-
-    if (location.hash) {
-      const match = navLinks.find(
-        (a) => a.getAttribute("href") === location.hash
-      );
-      if (match) setActive(match);
-    }
-  }, []);
+    if (isModifiedClick(e)) return;
+    e.preventDefault();
+    navigate(normalizePath(toPath), { replace: false });
+  };
 
   const navItems = [
     {
-      href: "requests/incoming",
+      href: "/requests/incoming",
       label: "Incoming requests",
       dataSidebarNav: "Popular Products",
-      isActive: false,
       svg: (
         <svg className="w-5 h-5" fill="none" stroke="#000000" viewBox="0 0 24 24">
           <path
@@ -85,14 +83,11 @@ const Sidebar = () => {
           ></path>
         </svg>
       ),
-      className:
-        "flex items-center gap-3 px-4 py-3 text-black hover:bg-gray-50 rounded-xl transition-all",
     },
     {
-      href: "requests/my",
+      href: "/requests/my",
       label: "My requests",
       dataSidebarNav: "Explore New",
-      isActive: true,
       svg: (
         <svg className="w-5 h-5" fill="none" stroke="#000000" viewBox="0 0 24 24">
           <path
@@ -103,14 +98,11 @@ const Sidebar = () => {
           ></path>
         </svg>
       ),
-      className:
-        "flex items-center gap-3 px-4 py-3 bg-blue-600 text-white rounded-2xl shadow-lg shadow-blue-200 transition-all",
     },
     {
-      href: "chats",
+      href: "/chats",
       label: "Chats",
       dataSidebarNav: "Clothing and Shoes",
-      isActive: false,
       svg: (
         <svg className="w-5 h-5" fill="none" stroke="#000000" viewBox="0 0 24 24">
           <path
@@ -121,14 +113,11 @@ const Sidebar = () => {
           ></path>
         </svg>
       ),
-      className:
-        "flex items-center gap-3 px-4 py-3 text-black hover:bg-gray-50 rounded-xl transition-all",
     },
     {
-      href: "transactions",
+      href: "/transactions",
       label: "Transactions",
-      dataSidebarNav: "Gifts and Living",
-      isActive: false,
+      dataSidebarNav: "Gifts and Living - Transactions",
       svg: (
         <svg className="w-5 h-5" fill="none" stroke="#000000" viewBox="0 0 24 24">
           <path
@@ -139,14 +128,11 @@ const Sidebar = () => {
           ></path>
         </svg>
       ),
-      className:
-        "flex items-center gap-3 px-4 py-3 text-black hover:bg-gray-50 rounded-xl transition-all",
     },
     {
       href: "/reports",
       label: "Reports",
-      dataSidebarNav: "Gifts and Living",
-      isActive: false,
+      dataSidebarNav: "Gifts and Living - Reports",
       svg: (
         <svg className="w-5 h-5" fill="none" stroke="#000000" viewBox="0 0 24 24">
           <path
@@ -157,8 +143,6 @@ const Sidebar = () => {
           ></path>
         </svg>
       ),
-      className:
-        "flex items-center gap-3 px-4 py-3 text-black hover:bg-gray-50 rounded-xl transition-all",
     },
   ];
 
@@ -187,18 +171,23 @@ const Sidebar = () => {
         <div className="absolute -bottom-1 left-[42px] w-6 h-[3px] bg-blue-600 rounded-full"></div>
       </div>
       <nav className="space-y-1.5 flex-1">
-        {navItems.map((item) => (
-          <a
-            key={item.dataSidebarNav}
-            href={item.href}
-            data-sidebar-nav={item.dataSidebarNav}
-            {...(item.isActive ? { "aria-current": "page" } : {})}
-            className={item.className}
-          >
-            {item.svg}
-            <span className="text-sm font-medium">{item.label}</span>
-          </a>
-        ))}
+        {navItems.map((item) => {
+          const activeNow = isPathActive(item.href, location.pathname);
+
+          return (
+            <a
+              key={item.dataSidebarNav}
+              href={item.href}
+              data-sidebar-nav={item.dataSidebarNav}
+              {...(activeNow ? { "aria-current": "page" } : {})}
+              className={activeNow ? ACTIVE_CLASS : INACTIVE_CLASS}
+              onClick={(e) => handleNavClick(e, item.href, activeNow)}
+            >
+              {item.svg}
+              <span className="text-sm font-medium">{item.label}</span>
+            </a>
+          );
+        })}
         <div className="py-4">
           <div className="h-px bg-gray-200 w-44 mx-auto"></div>
         </div>
@@ -211,6 +200,7 @@ const Sidebar = () => {
               key={action.message}
               type="button"
               className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-black hover:bg-gray-50 rounded-xl"
+              onClick={(e) => handleQuickActionClick(e, action.href)}
             >
               <span className="w-6 h-6 bg-gray-100 rounded-md flex items-center justify-center">
                 <svg

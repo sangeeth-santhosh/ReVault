@@ -1,8 +1,11 @@
 import { useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import Images from "../assets/Images.js";
 import Explore from "./Explore.jsx";
 
 const Header = () => {
+  const navigate = useNavigate();
+
   useEffect(() => {
     (function () {
       function bindOnce(el, handler) {
@@ -75,7 +78,7 @@ const Header = () => {
                 src={Images.Spidi}
                 className="w-10 h-10 rounded-full object-cover bg-pink-100"
               />
-              <span className="text-sm font-semibold">Login</span>
+              <span className="text-sm font-semibold" onClick={() => navigate("/login")}>Login</span>
             </div>
           </div>
         </header>
