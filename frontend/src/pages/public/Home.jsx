@@ -1,14 +1,10 @@
-import Hero from '../../components/Hero';
-import Logos from '../../components/Logos';
-import Services from '../../components/services';
-
 const Home = () => {
   return (
     <div className="bg-[#f7f7f7]">
       <div className="mx-auto">
-        <Hero />
-        <Logos />
-        <Services />
+        <h1 className="text-3xl font-bold underline">
+          Welcome to the Home Page
+        </h1>
       </div>
     </div>
   );

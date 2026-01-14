@@ -1,12 +1,11 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Link, useParams, useNavigate } from 'react-router-dom';
+import { Link, useParams } from 'react-router-dom';
 import inventoryService from '../../services/inventoryService.js';
 import requestService from '../../services/requestService.js';
 import useAuth from '../../hooks/useAuth.js';
 
 const ItemDetails = () => {
   const { id } = useParams();
-  const navigate = useNavigate();
   const { user } = useAuth();
   const [item, setItem] = useState(null);
   const [loading, setLoading] = useState(true);

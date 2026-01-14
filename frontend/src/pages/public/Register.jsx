@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import useAuth from '../../hooks/useAuth.js';
 import { register as registerService } from '../../services/authService.js';
 import apiClient from '../../services/apiClient.js';
@@ -62,7 +62,6 @@ const formatElapsed = (appliedAt) => {
 };
 
 const Register = () => {
-  const navigate = useNavigate();
   const { user } = useAuth();
   const [form, setForm] = useState(EMPTY_FORM);
   const [submitting, setSubmitting] = useState(false);

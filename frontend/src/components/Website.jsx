@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 
-const DemoDashboard = () => {
+const Website = () => {
 	useEffect(() => {
 		(function () {
 			const toastEl = document.getElementById('toast');
@@ -351,4 +351,4 @@ const DemoDashboard = () => {
 	);
 };
 
-export default DemoDashboard;
+export default Website;

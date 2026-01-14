@@ -1,92 +1,90 @@
 import { useEffect } from 'react';
 
-const DemoSidebar = () => {
+const Sidebar = () => {
 	useEffect(() => {
-		(function () {
-			const toastEl = document.getElementById('toast');
-			const toastMsgEl = document.getElementById('toast-message');
+		const toastEl = document.getElementById('toast');
+		const toastMsgEl = document.getElementById('toast-message');
+		let toastTimer = toastEl?.__demoToastTimer;
 
-			let toastTimer = toastEl?.__demoToastTimer;
+		const TOAST_HIDE = ['pointer-events-none', 'opacity-0', 'translate-y-2'];
+		const TOAST_SHOW = ['pointer-events-auto', 'opacity-100', 'translate-y-0'];
 
-			function showToast(message) {
-				if (!toastEl || !toastMsgEl) return;
-				toastMsgEl.textContent = message;
-				toastEl.classList.remove('pointer-events-none', 'opacity-0', 'translate-y-2');
-				toastEl.classList.add('pointer-events-auto', 'opacity-100', 'translate-y-0');
-				window.clearTimeout(toastTimer);
-				toastTimer = window.setTimeout(hideToast, 2400);
-				toastEl.__demoToastTimer = toastTimer;
-			}
+		function hideToast() {
+			if (!toastEl) return;
+			toastEl.classList.add(...TOAST_HIDE);
+			toastEl.classList.remove(...TOAST_SHOW);
+		}
 
-			function hideToast() {
-				if (!toastEl) return;
-				toastEl.classList.add('pointer-events-none', 'opacity-0', 'translate-y-2');
-				toastEl.classList.remove('pointer-events-auto', 'opacity-100', 'translate-y-0');
-			}
-			const navLinks = Array.from(document.querySelectorAll('aside nav a[data-sidebar-nav]'));
+		function showToast(message) {
+			if (!toastEl || !toastMsgEl) return;
+			toastMsgEl.textContent = message;
+			toastEl.classList.remove(...TOAST_HIDE);
+			toastEl.classList.add(...TOAST_SHOW);
+			window.clearTimeout(toastTimer);
+			toastTimer = window.setTimeout(hideToast, 2400);
+			toastEl.__demoToastTimer = toastTimer;
+		}
 
-			const ACTIVE = ['bg-blue-600', 'text-white', 'shadow-lg', 'shadow-blue-200'];
-			const INACTIVE = ['text-black', 'hover:bg-gray-50'];
+		function bindOnce(el, handler) {
+			if (!el || el.dataset.bound === '1') return false;
+			el.dataset.bound = '1';
+			handler(el);
+			return true;
+		}
 
-			function setActive(link) {
-				navLinks.forEach((a) => {
-					a.classList.remove(...ACTIVE);
-					a.classList.add(...INACTIVE);
-					a.removeAttribute('aria-current');
-				});
+		const navLinks = Array.from(document.querySelectorAll('aside nav a[data-sidebar-nav]'));
+		const ACTIVE = ['bg-blue-600', 'text-white', 'shadow-lg', 'shadow-blue-200'];
+		const INACTIVE = ['text-black', 'hover:bg-gray-50'];
 
-				link.classList.add(...ACTIVE);
-				link.classList.remove(...INACTIVE);
-				link.setAttribute('aria-current', 'page');
-			}
-
+		function setActive(link) {
 			navLinks.forEach((a) => {
-				a.addEventListener('click', (e) => {
-					setActive(a);
-
-					const href = a.getAttribute('href') || '';
-					if (href.startsWith('#')) {
-						const target = document.querySelector(href);
-						if (target) {
-							e.preventDefault();
-							target.scrollIntoView({ behavior: 'smooth', block: 'start' });
-						}
-					}
-				});
+				a.classList.remove(...ACTIVE);
+				a.classList.add(...INACTIVE);
+				a.removeAttribute('aria-current');
 			});
 
-			document.querySelectorAll('[data-action-toast]').forEach((btn) => {
-				btn.addEventListener('click', () => {
-					const message = btn.getAttribute('data-action-toast') || 'Done';
-					showToast(message);
+			link.classList.add(...ACTIVE);
+			link.classList.remove(...INACTIVE);
+			link.setAttribute('aria-current', 'page');
+		}
+
+		navLinks.forEach((a) => {
+			a.addEventListener('click', (e) => {
+				setActive(a);
+
+				const href = a.getAttribute('href') || '';
+				if (!href.startsWith('#')) return;
+				const target = document.querySelector(href);
+				if (!target) return;
+				e.preventDefault();
+				target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+			});
+		});
+
+		document.querySelectorAll('[data-action-toast]').forEach((btn) => {
+			btn.addEventListener('click', () => {
+				const message = btn.getAttribute('data-action-toast') || 'Done';
+				showToast(message);
+			});
+		});
+
+		const seeAllBtn = Array.from(document.querySelectorAll('button')).find((b) =>
+			(b.textContent || '').replace(/\s+/g, ' ').trim().toLowerCase() === 'see all'
+		);
+		if (seeAllBtn) {
+			bindOnce(seeAllBtn, () => {
+				seeAllBtn.addEventListener('click', () => {
+					const target = document.getElementById('section-products');
+					if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+					showToast('Showing all (demo)');
 				});
 			});
+		}
 
-			function bindOnce(el, handler) {
-				if (!el || el.dataset.bound === '1') return false;
-				el.dataset.bound = '1';
-				handler(el);
-				return true;
-			}
-
-			const seeAllBtn = Array.from(document.querySelectorAll('button')).find((b) =>
-				(b.textContent || '').replace(/\s+/g, ' ').trim().toLowerCase() === 'see all'
-			);
-			if (seeAllBtn) {
-				bindOnce(seeAllBtn, () => {
-					seeAllBtn.addEventListener('click', () => {
-						const target = document.getElementById('section-products');
-						if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
-						showToast('Showing all (demo)');
-					});
-				});
-			}
-
-			if (location.hash) {
-				const match = navLinks.find((a) => a.getAttribute('href') === location.hash);
-				if (match) setActive(match);
-			}
-		})();
+		if (location.hash) {
+			const match = navLinks.find((a) => a.getAttribute('href') === location.hash);
+			if (match) setActive(match);
+		}
 	}, []);
 
 	return (
@@ -231,4 +229,4 @@ const DemoSidebar = () => {
 	);
 };
 
-export default DemoSidebar;
+export default Sidebar;

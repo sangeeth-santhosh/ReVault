@@ -5,7 +5,7 @@ import requestService from '../../services/requestService.js';
 import transactionService from '../../services/transactionService.js';
 import reportService from '../../services/reportService.js';
 
-const Dashboard = () => {
+const Analytics = () => {
   const { user } = useAuth();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -183,4 +183,4 @@ const Dashboard = () => {
   );
 };
 
-export default Dashboard;
+export default Analytics;

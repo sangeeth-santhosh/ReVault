@@ -1,4 +1,4 @@
-import { Navigate, Route, Routes } from 'react-router-dom';
+import { Navigate, Outlet, Route, Routes } from 'react-router-dom';
 // import PublicLayout from '../components/layout/PublicLayout.jsx';
 // import DashboardLayout from '../components/layout/DashboardLayout.jsx';
 import Home from '../pages/public/Home.jsx';
@@ -7,7 +7,8 @@ import ItemDetails from '../pages/public/ItemDetails.jsx';
 import Login from '../pages/public/Login.jsx';
 import Register from '../pages/public/Register.jsx';
 import Contact from '../pages/public/Contact.jsx';
-import Dashboard from '../pages/private/Dashboard.jsx';
+import Layout from '../components/Layout.jsx';
+import Dashboard from '../pages/private/Analytics.jsx';
 import AddInventory from '../pages/private/AddInventory.jsx';
 import MyInventory from '../pages/private/MyInventory.jsx';
 import IncomingRequests from '../pages/private/IncomingRequests.jsx';
@@ -17,6 +18,10 @@ import Transactions from '../pages/private/Transactions.jsx';
 import Reports from '../pages/private/Reports.jsx';
 import Settings from '../pages/private/Settings.jsx';
 import useAuth from '../hooks/useAuth.js';
+
+const PublicShell = () => <Outlet />;
+
+const PrivateShell = () => <Outlet />;
 
 const ProtectedRoute = ({ children }) => {
 	const { user, loading } = useAuth();
@@ -34,7 +39,7 @@ const ProtectedRoute = ({ children }) => {
 
 const AppRouter = () => (
 	<Routes>
-		<Route element={<k />}>
+		<Route element={<PublicShell />}>
 			<Route index element={<Home />} />
 			<Route path="browse" element={<BrowseItems />} />
 			<Route path="items/:id" element={<ItemDetails />} />
@@ -43,10 +48,12 @@ const AppRouter = () => (
 			<Route path="contact" element={<Contact />} />
 		</Route>
 
+		<Route path="demo" element={<Layout />} />
+
 		<Route
 			element={(
 				<ProtectedRoute>
-					<k />
+					<PrivateShell />
 				</ProtectedRoute>
 			)}
 		>
