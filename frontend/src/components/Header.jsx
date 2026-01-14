@@ -75,7 +75,7 @@ const Header = () => {
                 src={Images.Spidi}
                 className="w-10 h-10 rounded-full object-cover bg-pink-100"
               />
-              <span className="text-sm font-semibold">Sangeeth</span>
+              <span className="text-sm font-semibold">Login</span>
             </div>
           </div>
         </header>

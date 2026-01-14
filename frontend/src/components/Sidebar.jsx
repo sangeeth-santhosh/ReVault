@@ -1,4 +1,5 @@
 import { useEffect } from "react";
+import { href } from "react-router-dom";
 
 const Sidebar = () => {
   useEffect(() => {
@@ -70,17 +71,12 @@ const Sidebar = () => {
 
   const navItems = [
     {
-      href: "#section-products",
+      href: "requests/incoming",
       label: "Incoming requests",
       dataSidebarNav: "Popular Products",
       isActive: false,
       svg: (
-        <svg
-          className="w-5 h-5"
-          fill="none"
-          stroke="#000000"
-          viewBox="0 0 24 24"
-        >
+        <svg className="w-5 h-5" fill="none" stroke="#000000" viewBox="0 0 24 24">
           <path
             strokeLinecap="round"
             strokeLinejoin="round"
@@ -93,17 +89,12 @@ const Sidebar = () => {
         "flex items-center gap-3 px-4 py-3 text-black hover:bg-gray-50 rounded-xl transition-all",
     },
     {
-      href: "#section-explore",
+      href: "requests/my",
       label: "My requests",
       dataSidebarNav: "Explore New",
       isActive: true,
       svg: (
-        <svg
-          className="w-5 h-5"
-          fill="none"
-          stroke="#000000"
-          viewBox="0 0 24 24"
-        >
+        <svg className="w-5 h-5" fill="none" stroke="#000000" viewBox="0 0 24 24">
           <path
             strokeLinecap="round"
             strokeLinejoin="round"
@@ -116,17 +107,12 @@ const Sidebar = () => {
         "flex items-center gap-3 px-4 py-3 bg-blue-600 text-white rounded-2xl shadow-lg shadow-blue-200 transition-all",
     },
     {
-      href: "#section-products",
+      href: "chats",
       label: "Chats",
       dataSidebarNav: "Clothing and Shoes",
       isActive: false,
       svg: (
-        <svg
-          className="w-5 h-5"
-          fill="none"
-          stroke="#000000"
-          viewBox="0 0 24 24"
-        >
+        <svg className="w-5 h-5" fill="none" stroke="#000000" viewBox="0 0 24 24">
           <path
             strokeLinecap="round"
             strokeLinejoin="round"
@@ -139,17 +125,12 @@ const Sidebar = () => {
         "flex items-center gap-3 px-4 py-3 text-black hover:bg-gray-50 rounded-xl transition-all",
     },
     {
-      href: "#section-products",
+      href: "transactions",
       label: "Transactions",
       dataSidebarNav: "Gifts and Living",
       isActive: false,
       svg: (
-        <svg
-          className="w-5 h-5"
-          fill="none"
-          stroke="#000000"
-          viewBox="0 0 24 24"
-        >
+        <svg className="w-5 h-5" fill="none" stroke="#000000" viewBox="0 0 24 24">
           <path
             strokeLinecap="round"
             strokeLinejoin="round"
@@ -162,17 +143,12 @@ const Sidebar = () => {
         "flex items-center gap-3 px-4 py-3 text-black hover:bg-gray-50 rounded-xl transition-all",
     },
     {
-      href: "#section-products",
+      href: "/reports",
       label: "Reports",
       dataSidebarNav: "Gifts and Living",
       isActive: false,
       svg: (
-        <svg
-          className="w-5 h-5"
-          fill="none"
-          stroke="#000000"
-          viewBox="0 0 24 24"
-        >
+        <svg className="w-5 h-5" fill="none" stroke="#000000" viewBox="0 0 24 24">
           <path
             strokeLinecap="round"
             strokeLinejoin="round"
@@ -187,8 +163,8 @@ const Sidebar = () => {
   ];
 
   const quickActions = [
-    { message: "Add inventory", label: "Add inventory" },
-    { message: "My inventory", label: "My inventory" },
+    { message: "Add inventory", label: "Add inventory", href: "/inventory/add" },
+    { message: "My inventory", label: "My inventory", href: "/inventory/my" },
   ];
 
   const lastOrders = [
