@@ -1,4 +1,4 @@
-import Analytics from "../pages/private/Analytics";
+import Analytics from "../pages/dashboard/Analytics";
 
 const Dashboard = () => {
     return (

@@ -1,4 +1,4 @@
-import Website from './Website.jsx';
+import Website from './Promo.jsx';
 
 const Outlet = () => {
 	return <Website />;

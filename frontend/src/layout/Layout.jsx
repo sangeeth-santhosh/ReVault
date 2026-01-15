@@ -115,9 +115,11 @@ const Layout = () => {
 			<div className="font-sans text-slate-800 h-screen">
 				<div className="w-full h-screen bg-white shadow-2xl flex overflow-hidden max-md:flex-col">
 					<Sidebar />
-					<main className="flex-1 p-6 overflow-y-auto min-h-0 max-sm:p-4">
+					<main className="flex-1 p-6 min-h-0 max-sm:p-4 flex flex-col">
 						<Header />
-						<Outlet />
+						<div className="flex-1 min-h-0 overflow-y-auto">
+							<Outlet />
+						</div>
 					</main>
 				</div>
 			</div>

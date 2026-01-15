@@ -1,19 +1,19 @@
 import { Navigate, Outlet, Route, Routes } from 'react-router-dom';
 import Layout from '../layout/Layout.jsx';
-// import BrowseItems from '../pages/public/BrowseItems.jsx';
-import ItemDetails from '../pages/public/ItemDetails.jsx';
-import Login from '../pages/public/Login.jsx';
-import Register from '../pages/public/Register.jsx';
+import BrowseItems from '../pages/website/BrowseItems.jsx';
+import ItemDetails from '../pages/website/ItemDetails.jsx';
+import Login from '../pages/website/Login.jsx';
+import Register from '../pages/website/Register.jsx';
 import Dashboard from '../components/Dashboard.jsx';
-import Website from '../components/Website.jsx';
-import AddInventory from '../pages/private/AddInventory.jsx';
-import MyInventory from '../pages/private/MyInventory.jsx';
-import IncomingRequests from '../pages/private/IncomingRequests.jsx';
-import MyRequests from '../pages/private/MyRequests.jsx';
-import Chats from '../pages/private/Chats.jsx';
-import Transactions from '../pages/private/Transactions.jsx';
-import Reports from '../pages/private/Reports.jsx';
-import Settings from '../pages/private/Settings.jsx';
+import Website from '../components/Promo.jsx';
+import AddInventory from '../pages/dashboard/AddInventory.jsx';
+import MyInventory from '../pages/dashboard/MyInventory.jsx';
+import IncomingRequests from '../pages/dashboard/IncomingRequests.jsx';
+import MyRequests from '../pages/dashboard/MyRequests.jsx';
+import Chats from '../pages/dashboard/Chats.jsx';
+import Transactions from '../pages/dashboard/Transactions.jsx';
+import Reports from '../pages/dashboard/Reports.jsx';
+import Settings from '../pages/dashboard/Settings.jsx';
 import useAuth from '../hooks/useAuth.js';
 
 const PublicShell = () => <Outlet />;
@@ -38,7 +38,7 @@ const AppRouter = () => (
 	<Routes>
 		<Route path="/" element={<Layout />}>
 			<Route element={<PublicShell />}>
-				<Route index element={<Website />} />
+				<Route index element={<BrowseItems />} />
 				{/* <Route path="browse" element={<BrowseItems />} /> */}
 				<Route path="items/:id" element={<ItemDetails />} />
 				<Route path="login" element={<Login />} />
