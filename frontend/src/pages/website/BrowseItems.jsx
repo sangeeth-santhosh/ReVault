@@ -7,7 +7,6 @@ const BrowseItems = () => {
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [sortBy, setSortBy] = useState("Default sorting");
 
   const load = async () => {
     setLoading(true);
@@ -27,78 +26,106 @@ const BrowseItems = () => {
   }, []);
 
   const sortedItems = useMemo(() => {
-    const list = [...items];
-    switch (sortBy) {
-      case "Sort by price: low to high":
-        return list.sort((a, b) => (a.price || 0) - (b.price || 0));
-      case "Sort by price: high to low":
-        return list.sort((a, b) => (b.price || 0) - (a.price || 0));
-      case "Sort by newness":
-        return list.sort(
-          (a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0)
-        );
-      default:
-        return list;
-    }
-  }, [items, sortBy]);
+    return [...items];
+  }, [items]);
 
   return (
     <div className="min-h-screen">
       <div className="mx-auto">
-        <Promo />
-        {loading ? <p className="text-sm text-gray-600">Loading…</p> : null}
-        {error ? <p className="text-sm text-red-600">{error}</p> : null}
-        {!loading && !sortedItems.length ? (
-          <p className="text-sm text-gray-600">No inventory published yet.</p>
-        ) : null}
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-x-4 gap-y-6">
 
-        <div className="grid grid-cols-1">
-          <div>
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-x-4 gap-y-6">
-              {sortedItems.map((item) => {
-                const imageSrc =
-                  item.images?.[0] ||
-                  "https://placehold.co/400x400/e5e7eb/ffffff?text=IMAGE";
-                const name = item.title || item.name || "Untitled item";
-                const category = item.category || "Uncategorized";
-                const isSale = Boolean(item.onSale);
-                return (
-                  <div key={item._id || item.id} className="group relative">
-                    {isSale ? (
-                      <div className="absolute top-2 left-2 z-10">
+          {/* Promo: visually large, logically partial */}
+          <div className="col-span-2 sm:col-span-3 md:col-span-4 lg:col-span-6">
+            <Promo />
+          </div>
+
+          {loading ? (
+            <div className="col-span-full">
+              <p className="text-sm text-gray-600">Loading…</p>
+            </div>
+          ) : null}
+
+          {error ? (
+            <div className="col-span-full">
+              <p className="text-sm text-red-600">{error}</p>
+            </div>
+          ) : null}
+
+          {!loading && !sortedItems.length ? (
+            <div className="col-span-full">
+              <p className="text-sm text-gray-600">
+                No inventory published yet.
+              </p>
+            </div>
+          ) : null}
+
+          {sortedItems.map((item) => {
+            const imageSrc =
+              item.images?.[0] ||
+              "https://placehold.co/400x400/e5e7eb/ffffff?text=IMAGE";
+            const name = item.title || item.name || "Untitled item";
+            const category = item.category || "Uncategorized";
+            const isSale = Boolean(item.onSale);
+
+            return (
+              <div key={item._id || item.id} className="group relative">
+                <div className="w-45 h-48 overflow-hidden bg-gray-100 rounded-[35px] relative">
+                  <Link to={`/items/${item._id || item.id}`}>
+                    <img
+                      src={imageSrc}
+                      alt={`${name} product image`}
+                      className="w-full h-full object-cover object-center group-hover:opacity-75 transition-opacity duration-300"
+                    />
+                  </Link>
+
+                  <div className="absolute top-4 left-5 right-5 z-10 flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      {isSale ? (
                         <span className="bg-red-500 text-white text-[10px] font-semibold px-1.5 py-0.5 rounded-sm uppercase">
                           Sale
                         </span>
+                      ) : null}
+
+                      <div className="flex gap-1 pointer-events-none">
+                        <div className="w-3 h-3 rounded-full bg-pink-300"></div>
+                        <div className="w-3 h-3 rounded-full bg-yellow-300"></div>
                       </div>
-                    ) : null}
-                    <div className="w-full h-48 overflow-hidden bg-gray-100 rounded-md">
-                      <Link to={`/items/${item._id || item.id}`}>
-                        <img
-                          src={imageSrc}
-                          alt={`${name} product image`}
-                          className="w-full h-full object-cover object-center rounded-md group-hover:opacity-75 transition-opacity duration-300"
+                    </div>
+
+                    <button
+                      type="button"
+                      className="w-8 h-8 bg-white rounded-full flex items-center justify-center shadow-sm"
+                    >
+                      <svg
+                        className="w-4 h-4 text-black"
+                        fill="none"
+                        stroke="#000000"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth="2"
+                          d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
                         />
-                      </Link>
-                    </div>
-                    <div className="pt-2 text-left">
-                      <p className="text-[10px] text-gray-500 mb-0.5">
-                        {category}
-                      </p>
-                      <h3 className="text-sm font-medium text-gray-900 hover:text-red-500 transition-colors duration-200">
-                        <Link to={`/items/${item._id || item.id}`}>
-                          <span
-                            aria-hidden="true"
-                            className="absolute inset-0"
-                          ></span>
-                          {name}
-                        </Link>
-                      </h3>
-                    </div>
+                      </svg>
+                    </button>
                   </div>
-                );
-              })}
-            </div>
-          </div>
+                </div>
+
+                <div className="pt-2 text-left">
+                  <p className="text-[10px] text-gray-500 mb-0.5">
+                    {category}
+                  </p>
+                  <h3 className="text-sm font-medium text-gray-900 hover:text-red-500 transition-colors duration-200">
+                    <Link to={`/items/${item._id || item.id}`}>
+                      {name}
+                    </Link>
+                  </h3>
+                </div>
+              </div>
+            );
+          })}
         </div>
       </div>
     </div>
