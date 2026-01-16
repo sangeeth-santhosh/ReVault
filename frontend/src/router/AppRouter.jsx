@@ -4,7 +4,7 @@ import BrowseItems from '../pages/website/BrowseItems.jsx';
 import ItemDetails from '../pages/website/ItemDetails.jsx';
 import Login from '../pages/website/Login.jsx';
 import Register from '../pages/website/Register.jsx';
-import Dashboard from '../components/Dashboard.jsx';
+import Analytics from '../pages/dashboard/Analytics.jsx';
 import Website from '../components/Promo.jsx';
 import AddInventory from '../pages/dashboard/AddInventory.jsx';
 import MyInventory from '../pages/dashboard/MyInventory.jsx';
@@ -44,7 +44,6 @@ const AppRouter = () => (
 		<Route path="/" element={<Layout />}>
 			<Route element={<PublicShell />}>
 				<Route index element={<BrowseItems />} />
-				{/* <Route path="browse" element={<BrowseItems />} /> */}
 				<Route path="items/:id" element={<ItemDetails />} />
 				<Route path="login" element={<Login />} />
 				<Route path="register" element={<Register />} />
@@ -58,7 +57,7 @@ const AppRouter = () => (
 					</ProtectedRoute>
 				)}
 			>
-				<Route path="dashboard" element={<Dashboard />} />
+				<Route path="dashboard" element={<Analytics />} />
 				<Route path="inventory/add" element={<AddInventory />} />
 				<Route path="inventory/update/:id" element={<AddInventory />} />
 				<Route path="inventory/my" element={<MyInventory />} />
