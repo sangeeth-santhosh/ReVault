@@ -254,11 +254,11 @@ const Explore = () => {
         </div>
       </div>
       <div className="justify-self-end flex items-center gap-2 max-md:justify-self-start max-md:w-full max-sm:flex-wrap">
-        <button className="px-6 py-2 bg-gray-50 rounded-xl text-sm font-medium text-black relative">
+        <button className="px-6 py-2 bg-gray-100 rounded-xl text-sm font-medium text-black relative">
           Filters
-          <span className="absolute top-2 right-4 w-1.5 h-1.5 bg-blue-600 rounded-full"></span>
+          <span className=""></span>
         </button>
-        <button className="p-2 bg-gray-50 rounded-xl text-black">
+        <button className="p-2 bg-gray-100 rounded-xl text-black">
           <svg
             className="w-5 h-5"
             fill="none"
