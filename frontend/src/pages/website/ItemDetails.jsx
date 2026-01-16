@@ -111,7 +111,7 @@ const ItemDetails = () => {
       <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-12">
         {loading ? (
           <div className="text-sm text-gray-600">
-            <PaperPlane className="w-10 h-10" />
+            <PaperPlane />
           </div>
         ) : null}
         {error ? <p className="text-sm text-red-600">{error}</p> : null}

@@ -51,7 +51,7 @@ const MyInventory = () => {
 
       {loading ? (
         <div className="text-sm text-gray-600">
-          <PaperPlane className="w-10 h-10" />
+          <PaperPlane />
         </div>
       ) : null}
       {error ? <p className="text-sm text-red-600">{error}</p> : null}
