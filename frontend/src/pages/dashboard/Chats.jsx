@@ -88,7 +88,7 @@ const Chats = () => {
           <h2>Threads</h2>
           {loadingThreads ? (
             <div className="text-xs text-gray-500">
-              <PaperPlane className="w-6 h-6" />
+              <PaperPlane className="" />
             </div>
           ) : null}
         </div>

@@ -343,7 +343,7 @@ const AddInventory = () => {
       </div>
       {loadingItem ? (
         <div className="text-sm text-gray-600">
-          <PaperPlane className="w-10 h-10" />
+          <PaperPlane className="" />
         </div>
       ) : null}
       <form onSubmit={handleSubmit} className="space-y-4 rounded-lg border border-gray-200 bg-white p-6 shadow-sm">

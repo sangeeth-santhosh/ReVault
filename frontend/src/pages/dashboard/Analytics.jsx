@@ -144,7 +144,7 @@ const Analytics = () => {
           </div>
           {loading ? (
             <div className="mt-3 text-sm text-gray-600">
-              <PaperPlane className="w-10 h-10" />
+              <PaperPlane className="" />
             </div>
           ) : null}
           {!loading && !activity.length ? (
