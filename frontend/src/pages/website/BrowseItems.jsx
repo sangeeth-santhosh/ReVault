@@ -42,6 +42,30 @@ const BrowseItems = () => {
     });
   }, [sortedItems, conditionFilter]);
 
+  useEffect(() => {
+    const section = document.getElementById("section-explore");
+    if (!section) return;
+
+    const condition = searchParams.get("condition") || "used";
+
+    const buttons = Array.from(
+      section.querySelectorAll("div.justify-self-center div.flex button")
+    );
+
+    const targetBtn = buttons.find(
+      (btn) => btn.textContent.trim().toLowerCase() === condition
+    );
+
+    if (!targetBtn) return;
+
+    buttons.forEach((btn) => {
+      btn.dataset.exploreSelected = btn === targetBtn ? "1" : "0";
+    });
+
+    // reuse existing visual logic
+    targetBtn.click();
+  }, [searchParams]);
+
   return (
     <div className="min-h-screen">
       <div className="mx-auto">
@@ -128,7 +152,7 @@ const BrowseItems = () => {
                     </div>
                   </div>
 
-                  <div className="pt-2 text-left">
+                  <div className="pt-2 text-left pl-2">
                     <p className="text-[10px] text-gray-500 mb-0.5">
                       {category}
                     </p>

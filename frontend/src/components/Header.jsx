@@ -384,10 +384,10 @@ const Header = () => {
       >
         <header className="relative flex items-center justify-between mb-6 max-md:flex-col max-md:items-start max-md:gap-4">
           <div className="flex items-start gap-2">
-            <span className="text-4xl font-semibold leading-none">37</span>
+            <span className="text-4xl font-semibold leading-none">0</span>
             <div className="h-4 w-px bg-gray-200 self-center"></div>
             <div className="leading-tight mt-[1px]">
-              <div className="text-sm font-semibold text-black">Orders</div>
+              <div className="text-sm font-semibold text-black">Requests</div>
               <div className="text-xs text-gray-400">Last 7 days</div>
             </div>
           </div>
