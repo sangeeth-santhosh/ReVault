@@ -6,6 +6,46 @@ import Explore from "./Explore.jsx";
 import useAuth from "../hooks/useAuth.js";
 import { Bell, Search, Settings } from "lucide-react";
 
+const NOTIF_STORAGE_KEY = "revault.notifications";
+
+const readStoredNotifications = () => {
+  try {
+    const raw = localStorage.getItem(NOTIF_STORAGE_KEY);
+    if (!raw) return [];
+    const parsed = JSON.parse(raw);
+    if (!Array.isArray(parsed)) return [];
+    return parsed
+      .filter((n) => n && typeof n === "object")
+      .map((n) => ({
+        message: n.message,
+        createdAt: n.createdAt,
+        updatedAt: n.updatedAt,
+        isRead: Boolean(n.isRead),
+        _id: n._id,
+        id: n.id,
+        type: n.type,
+      }));
+  } catch {
+    return [];
+  }
+};
+
+const writeStoredNotifications = (list) => {
+  try {
+    localStorage.setItem(NOTIF_STORAGE_KEY, JSON.stringify(list));
+  } catch {
+    // ignore
+  }
+};
+
+const routeForType = (type) => {
+  if (type === "business_request") return "/login";
+  if (type === "inventory") return "/inventory/my";
+  if (type === "request") return "/requests/my";
+  if (type === "transaction") return "/transactions";
+  return null;
+};
+
 const Header = () => {
   const navigate = useNavigate();
   const { user, token, logout } = useAuth();
@@ -16,39 +56,84 @@ const Header = () => {
 
   const [notifOpen, setNotifOpen] = useState(false);
   const popoverRef = useRef(null);
-  const [notifications, setNotifications] = useState([]);
+  const [notifications, setNotifications] = useState(() =>
+    readStoredNotifications()
+  );
   const [showAllUnread, setShowAllUnread] = useState(false);
   const notifBtnRef = useRef(null);
   const notifMenuRef = useRef(null);
   const [notifPos, setNotifPos] = useState({ top: 0, left: 0 });
 
-  const getId = (n) => n?._id || n?.id || `${n?.createdAt || ""}-${n?.message || ""}`;
+  const getId = (n) =>
+    n?._id || n?.id || `${n?.createdAt || ""}-${n?.message || ""}`;
 
   const unreadCount = useMemo(
     () => notifications.filter((n) => !n?.isRead).length,
     [notifications]
   );
 
+  const formatWhen = useMemo(
+    () => (value) => {
+      if (!value) return "—";
+      const d = new Date(value);
+      if (Number.isNaN(d.getTime())) return "—";
+
+      const now = new Date();
+      const diffMs = now.getTime() - d.getTime();
+      const diffMin = Math.floor(diffMs / (1000 * 60));
+      const diffHr = Math.floor(diffMs / (1000 * 60 * 60));
+
+      const sameDay =
+        d.getFullYear() === now.getFullYear() &&
+        d.getMonth() === now.getMonth() &&
+        d.getDate() === now.getDate();
+
+      if (diffMin < 1) return "Just now";
+      if (diffMin < 60) return `${diffMin} min ago`;
+      if (sameDay) return "Today";
+      if (diffHr < 48) return "1 day ago";
+      return d.toLocaleDateString("en-US", { month: "short", day: "2-digit" });
+    },
+    []
+  );
+
+  const sorted = useMemo(() => {
+    const copy = Array.isArray(notifications) ? [...notifications] : [];
+    copy.sort((a, b) => {
+      const ad = new Date(a?.createdAt || 0).getTime();
+      const bd = new Date(b?.createdAt || 0).getTime();
+      return bd - ad;
+    });
+    return copy;
+  }, [notifications]);
+
   const visibleNotifications = useMemo(() => {
-    const unread = notifications.filter((n) => !n?.isRead);
-    return showAllUnread ? unread : unread.slice(0, 8);
-  }, [notifications, showAllUnread]);
+    const unread = sorted.filter((n) => !n?.isRead);
 
-  const showSeeMore = useMemo(() => {
-    if (showAllUnread) return false;
-    const unread = notifications.filter((n) => !n?.isRead);
-    return unread.length > visibleNotifications.length;
-  }, [notifications, showAllUnread, visibleNotifications.length]);
+    const readSorted = sorted
+      .filter((n) => n?.isRead)
+      .sort((a, b) => {
+        const ad = new Date(a?.createdAt || 0).getTime();
+        const bd = new Date(b?.createdAt || 0).getTime();
+        return bd - ad;
+      });
 
-  const formatWhen = (createdAt) => {
-    const t = createdAt ? new Date(createdAt).getTime() : NaN;
-    if (!Number.isFinite(t)) return "";
-    const diff = Date.now() - t;
-    if (diff < 60_000) return "now";
-    if (diff < 3_600_000) return `${Math.max(1, Math.floor(diff / 60_000))}m`;
-    if (diff < 86_400_000) return `${Math.max(1, Math.floor(diff / 3_600_000))}h`;
-    return `${Math.max(1, Math.floor(diff / 86_400_000))}d`;
-  };
+    const unreadAllowed =
+      showAllUnread || unread.length <= 10 ? unread : unread.slice(0, 10);
+    const allowedUnreadIds = new Set(unreadAllowed.map(getId).filter(Boolean));
+    const allowedReadIds = new Set(
+      readSorted.slice(0, 3).map(getId).filter(Boolean)
+    );
+
+    return sorted.filter((n) => {
+      const id = getId(n);
+      if (!id) return false;
+      if (!n?.isRead) return allowedUnreadIds.has(id);
+      return allowedReadIds.has(id);
+    });
+  }, [sorted, showAllUnread]);
+
+  const showSeeMore = unreadCount > 10 && !showAllUnread;
 
   useEffect(() => {
     const handler = (e) => {
@@ -56,7 +141,11 @@ const Header = () => {
       if (!next) return;
       const normalized =
         typeof next === "string"
-          ? { message: next, createdAt: new Date().toISOString(), isRead: false }
+          ? {
+              message: next,
+              createdAt: new Date().toISOString(),
+              isRead: false,
+            }
           : next;
       setNotifications((prev) => {
         const id = getId(normalized);
@@ -72,16 +161,54 @@ const Header = () => {
     };
   }, []);
 
-  const toggleNotifications = () => {
-    setShowAllUnread(false);
-    setNotifOpen((v) => !v);
+  useEffect(() => {
+    writeStoredNotifications(notifications);
+  }, [notifications]);
+
+  useEffect(() => {
+    if (!notifOpen) setShowAllUnread(false);
+  }, [notifOpen]);
+
+  const toggleNotifications = async () => {
+    setNotifOpen((prev) => {
+      const next = !prev;
+      if (next) {
+        // Mirror admin behavior: refresh notifications when opening.
+        setNotifications(readStoredNotifications());
+      }
+      return next;
+    });
     if (!notifOpen) setOpen(false);
   };
 
-  const onClickNotification = (n) => {
+  const onClickNotification = async (n) => {
     const id = getId(n);
+    if (!id) return;
+
+    setNotifOpen(false);
+
+    // Optimistic UI update (mark read immediately)
     setNotifications((prev) =>
-      prev.map((x) => (getId(x) === id ? { ...x, isRead: true } : x))
+      prev.map((x) =>
+        getId(x) === id
+          ? { ...x, isRead: true, updatedAt: new Date().toISOString() }
+          : x
+      )
+    );
+
+    const to = routeForType(n?.type);
+    if (to) navigate(to);
+  };
+
+  const onClickUnreadCount = (e) => {
+    e?.stopPropagation?.();
+    if (!unreadCount) return;
+
+    const now = new Date().toISOString();
+    setNotifications((prev) =>
+      (Array.isArray(prev) ? prev : []).map((n) =>
+        n?.isRead ? n : { ...n, isRead: true, updatedAt: now }
+      )
     );
   };
 
@@ -154,7 +281,10 @@ const Header = () => {
       const width = 360;
       const gap = 12;
 
-      const left = Math.max(8, Math.min(window.innerWidth - width - 8, rect.right - width));
+      const left = Math.max(
+        8,
+        Math.min(window.innerWidth - width - 8, rect.right - width)
+      );
       const top = Math.min(window.innerHeight - 8, rect.bottom + gap);
       setNotifPos({ top, left });
     };
@@ -173,7 +303,7 @@ const Header = () => {
     };
 
     const onAnyScroll = () => {
-      setNotifOpen(false);
+      updatePosition();
     };
 
     document.addEventListener("mousedown", onPointerDown, true);
@@ -219,7 +349,7 @@ const Header = () => {
     };
 
     const onAnyScroll = () => {
-      setOpen(false);
+      updatePosition();
     };
 
     document.addEventListener("mousedown", onPointerDown, true);
@@ -244,7 +374,14 @@ const Header = () => {
 
   return (
     <>
-      <div style={{ position: "sticky", top: 0, zIndex: 30, backgroundColor: "#fff" }}>
+      <div
+        style={{
+          position: "sticky",
+          top: 0,
+          zIndex: 30,
+          backgroundColor: "#fff",
+        }}
+      >
         <header className="relative flex items-center justify-between mb-6 max-md:flex-col max-md:items-start max-md:gap-4">
           <div className="flex items-start gap-2">
             <span className="text-4xl font-semibold leading-none">37</span>
@@ -273,7 +410,7 @@ const Header = () => {
               >
                 <Bell size={22} className="opacity-60" />
                 {unreadCount > 0 ? (
-                  <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 rounded-full bg-white text-black text-[11px] leading-[18px] text-center">
+                  <span className="absolute -top-1 -right-1 min-w-[17px] h-[15px] px-1 rounded-full bg-blue-500 text-black text-[11px] leading-[13px] text-center">
                     {unreadCount > 99 ? "99+" : unreadCount}
                   </span>
                 ) : null}
@@ -284,16 +421,30 @@ const Header = () => {
               ? createPortal(
                   <div
                     ref={notifMenuRef}
-                    className="w-[360px] max-w-[calc(100vw-32px)] rounded-2xl bg-white-100/50 border border-black/10 backdrop-blur-xl overflow-hidden"
-                    style={{ position: "fixed", top: notifPos.top, left: notifPos.left, zIndex: 9999 }}
+                    className="w-[360px] max-w-[calc(100vw-32px)] rounded-2xl bg-white/90 border border-black/10 backdrop-blur-xl overflow-hidden"
+                    style={{
+                      position: "fixed",
+                      top: notifPos.top,
+                      left: notifPos.left,
+                      zIndex: 9999,
+                    }}
                   >
                     <div className="px-4 py-3 border-b border-black/10 flex items-center justify-between">
-                      <p className="text-sm font-semibold text-black/100">Notifications</p>
-                      <p className="text-xs text-black/100">{unreadCount} unread</p>
+                      <p className="text-sm font-semibold text-black/100">
+                        Notifications
+                      </p>
+                      <button
+                        onClick={onClickUnreadCount}
+                        className="text-xs text-black/100"
+                      >
+                        {unreadCount} unread
+                      </button>
                     </div>
 
                     {notifications.length === 0 ? (
-                      <div className="px-4 py-6 text-sm text-black/100">No notifications yet.</div>
+                      <div className="px-4 py-6 text-sm text-black/100">
+                        No notifications yet.
+                      </div>
                     ) : (
                       <div className="max-h-[360px] overflow-y-auto no-scrollbar">
                         {visibleNotifications.map((n) => {
@@ -304,15 +455,21 @@ const Header = () => {
                               key={id}
                               type="button"
                               onClick={() => onClickNotification(n)}
-                              className={`w-full text-left px-4 py-3 border-b border-white/10 last:border-b-0 hover:bg-white/5 ${
-                                isUnread ? "bg-white/10" : "bg-transparent"
+                              className={`w-full text-left px-4 py-3 border-b border-black/10 last:border-b-0 hover:bg-black/5 ${
+                                isUnread ? "bg-black/5" : "bg-transparent"
                               }`}
                             >
                               <div className="flex items-center gap-3">
-                                <p className={`flex-1 text-sm truncate ${isUnread ? "text-white" : "text-white/70"}`}>
+                                <p
+                                  className={`flex-1 text-sm truncate ${
+                                    isUnread ? "text-black" : "text-black/70"
+                                  }`}
+                                >
                                   {n?.message || "Notification"}
                                 </p>
-                                <p className="text-xs text-white/60 shrink-0">{formatWhen(n?.createdAt)}</p>
+                                <p className="text-xs text-black/60 shrink-0">
+                                  {formatWhen(n?.createdAt)}
+                                </p>
                               </div>
                             </button>
                           );
@@ -322,7 +479,7 @@ const Header = () => {
                           <button
                             type="button"
                             onClick={() => setShowAllUnread(true)}
-                            className="w-full text-left px-4 py-3 hover:bg-white/5 text-sm text-white/70"
+                            className="w-full text-left px-4 py-3 hover:bg-black/5 text-sm text-black/70"
                           >
                             See more
                           </button>

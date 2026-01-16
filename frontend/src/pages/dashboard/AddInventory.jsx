@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import inventoryService from '../../services/inventoryService.js';
+import PaperPlane from '../../components/PaperPlanej.jsx';
 
 const DRAFT_STORAGE_KEY = 'revault_add_inventory_draft';
 
@@ -340,7 +341,11 @@ const AddInventory = () => {
         <h1 className="text-2xl font-semibold text-gray-900">{isEdit ? 'Edit inventory' : 'Add inventory'}</h1>
         <p className="text-sm text-gray-600">{isEdit ? 'Update your listing details.' : 'Create a new surplus listing with key specs.'}</p>
       </div>
-      {loadingItem ? <p className="text-sm text-gray-600">Loading…</p> : null}
+      {loadingItem ? (
+        <div className="text-sm text-gray-600">
+          <PaperPlane className="w-10 h-10" />
+        </div>
+      ) : null}
       <form onSubmit={handleSubmit} className="space-y-4 rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
         <div className="grid gap-4 md:grid-cols-2">
           <div className="space-y-1">

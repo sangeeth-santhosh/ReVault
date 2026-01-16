@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import requestService from '../../services/requestService.js';
+import PaperPlane from '../../components/PaperPlanej.jsx';
 
 const MyRequests = () => {
   const [requests, setRequests] = useState([]);
@@ -31,7 +32,11 @@ const MyRequests = () => {
         <p className="text-sm text-gray-600">Track the requests you sent to sellers.</p>
       </div>
 
-      {loading ? <p className="text-sm text-gray-600">Loading…</p> : null}
+      {loading ? (
+        <div className="text-sm text-gray-600">
+          <PaperPlane className="w-10 h-10" />
+        </div>
+      ) : null}
       {error ? <p className="text-sm text-red-600">{error}</p> : null}
 
       {!loading && !requests.length ? (

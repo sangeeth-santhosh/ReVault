@@ -4,6 +4,7 @@ import inventoryService from '../../services/inventoryService.js';
 import requestService from '../../services/requestService.js';
 import transactionService from '../../services/transactionService.js';
 import reportService from '../../services/reportService.js';
+import PaperPlane from '../../components/PaperPlanej.jsx';
 
 const Analytics = () => {
   const { user } = useAuth();
@@ -141,7 +142,11 @@ const Analytics = () => {
             <h3 className="text-lg font-semibold text-gray-900">Recent activity</h3>
             <span className="text-xs text-gray-500">Last 5 updates</span>
           </div>
-          {loading ? <p className="mt-3 text-sm text-gray-600">Loading…</p> : null}
+          {loading ? (
+            <div className="mt-3 text-sm text-gray-600">
+              <PaperPlane className="w-10 h-10" />
+            </div>
+          ) : null}
           {!loading && !activity.length ? (
             <p className="mt-3 text-sm text-gray-600">No recent activity yet.</p>
           ) : null}

@@ -6,6 +6,7 @@ import apiClient from '../../services/apiClient.js';
 
 const LEGACY_PENDING_KEY = 'revault.registerRequest';
 const REG_IDENTITY_KEY = 'revault.registrationIdentity';
+const REG_STATUS_KEY = 'revault.registrationStatusByEmail';
 
 const EMPTY_FORM = {
   businessName: '',
@@ -45,6 +46,51 @@ const writeIdentity = ({ email, phone }) => {
 const clearLegacyPending = () => {
   try {
     localStorage.removeItem(LEGACY_PENDING_KEY);
+  } catch {
+    // ignore
+  }
+};
+
+const pushNotification = (message) => {
+  try {
+    window.dispatchEvent(
+      new CustomEvent('revault:notification', {
+        detail: {
+          message,
+          createdAt: new Date().toISOString(),
+          isRead: false,
+        },
+      })
+    );
+  } catch {
+    // ignore
+  }
+};
+
+const readStatusByEmail = (email) => {
+  try {
+    const normalized = (email || '').toString().trim().toLowerCase();
+    if (!normalized) return null;
+    const raw = localStorage.getItem(REG_STATUS_KEY);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw);
+    if (!parsed || typeof parsed !== 'object') return null;
+    const status = parsed[normalized];
+    return status ? String(status) : null;
+  } catch {
+    return null;
+  }
+};
+
+const writeStatusByEmail = (email, status) => {
+  try {
+    const normalized = (email || '').toString().trim().toLowerCase();
+    if (!normalized) return;
+    const raw = localStorage.getItem(REG_STATUS_KEY);
+    const parsed = raw ? JSON.parse(raw) : {};
+    const next = parsed && typeof parsed === 'object' ? { ...parsed } : {};
+    next[normalized] = status;
+    localStorage.setItem(REG_STATUS_KEY, JSON.stringify(next));
   } catch {
     // ignore
   }
@@ -128,12 +174,33 @@ const Register = () => {
         return;
       }
 
+      const normalizedEmail = email.toLowerCase();
+      const previousStatus = readStatusByEmail(normalizedEmail);
+
       try {
         const statusRes = await fetchRegistrationStatus(email);
         if (!isMounted) return;
 
         const backendStatus = statusRes?.status ?? null;
         applyBackendState({ status: backendStatus, appliedAt: statusRes?.appliedAt || null });
+
+        const nextKnownStatus = backendStatus ? String(backendStatus) : null;
+        if (nextKnownStatus && nextKnownStatus !== previousStatus) {
+          if (nextKnownStatus === 'approved') {
+            if (previousStatus === 'deactivated') {
+              pushNotification('Admin reactivated this business request. You can now login!');
+            } else {
+              pushNotification('Admin verified and approved this business request. You can now login!');
+            }
+          }
+          if (nextKnownStatus === 'rejected') {
+            pushNotification('Admin rejected this business request.');
+          }
+          if (nextKnownStatus === 'deactivated') {
+            pushNotification('Admin deactivated this business request.');
+          }
+        }
+        if (nextKnownStatus) writeStatusByEmail(normalizedEmail, nextKnownStatus);
       } catch {
         if (!isMounted) return;
         applyBackendState({ status: null, appliedAt: null });
@@ -202,6 +269,12 @@ const Register = () => {
       setRequestStatus(nextStatus);
       setAppliedAt(nextStatus === 'pending' ? statusRes?.appliedAt || null : null);
       prevRequestStatusRef.current = nextStatus;
+
+      const normalizedEmail = (payload.email || '').toString().trim().toLowerCase();
+      if (backendStatus) writeStatusByEmail(normalizedEmail, String(backendStatus));
+      if (backendStatus === 'pending') {
+        pushNotification('Business verification request sent to admin!');
+      }
     } catch (err) {
       setRequestStatus('none');
       setAppliedAt(null);

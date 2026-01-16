@@ -3,6 +3,7 @@ import { Link, useParams } from 'react-router-dom';
 import inventoryService from '../../services/inventoryService.js';
 import requestService from '../../services/requestService.js';
 import useAuth from '../../hooks/useAuth.js';
+import PaperPlane from '../../components/PaperPlanej.jsx';
 
 const ItemDetails = () => {
   const { id } = useParams();
@@ -108,7 +109,11 @@ const ItemDetails = () => {
   return (
     <div className="min-h-screen">
       <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-12">
-        {loading ? <p className="text-sm text-gray-600">Loading…</p> : null}
+        {loading ? (
+          <div className="text-sm text-gray-600">
+            <PaperPlane className="w-10 h-10" />
+          </div>
+        ) : null}
         {error ? <p className="text-sm text-red-600">{error}</p> : null}
         {!loading && !item ? <p className="text-sm text-gray-600">Item not found.</p> : null}
 

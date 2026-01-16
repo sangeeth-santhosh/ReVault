@@ -1,12 +1,14 @@
 import { useEffect, useMemo, useState } from "react";
-import { Link } from "react-router-dom";
-import Promo from "../../components/Promo.jsx";
+import { Link, useSearchParams } from "react-router-dom";
+// import Promo from "../../components/Promo.jsx";
 import inventoryService from "../../services/inventoryService.js";
+import PaperPlane from "../../components/PaperPlanej.jsx";
 
 const BrowseItems = () => {
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [searchParams] = useSearchParams();
 
   const load = async () => {
     setLoading(true);
@@ -29,19 +31,31 @@ const BrowseItems = () => {
     return [...items];
   }, [items]);
 
+  const conditionFilter = (
+    searchParams.get("condition") || "used"
+  ).toLowerCase();
+
+  const visibleItems = useMemo(() => {
+    return sortedItems.filter((item) => {
+      const condition = String(item?.condition ?? "").toLowerCase();
+      return condition === conditionFilter;
+    });
+  }, [sortedItems, conditionFilter]);
+
   return (
     <div className="min-h-screen">
       <div className="mx-auto">
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-x-4 gap-y-6">
-
           {/* Promo: visually large, logically partial */}
-          <div className="col-span-2 sm:col-span-3 md:col-span-4 lg:col-span-6">
+          {/* <div className="col-span-full">
             <Promo />
-          </div>
+          </div> */}
 
           {loading ? (
             <div className="col-span-full">
-              <p className="text-sm text-gray-600">Loading…</p>
+              <div className="text-sm text-gray-600">
+                <PaperPlane className="w-10 h-10" />
+              </div>
             </div>
           ) : null}
 
@@ -51,7 +65,7 @@ const BrowseItems = () => {
             </div>
           ) : null}
 
-          {!loading && !sortedItems.length ? (
+          {!loading && !visibleItems.length ? (
             <div className="col-span-full">
               <p className="text-sm text-gray-600">
                 No inventory published yet.
@@ -59,7 +73,7 @@ const BrowseItems = () => {
             </div>
           ) : null}
 
-          {sortedItems.map((item) => {
+          {visibleItems.map((item) => {
             const imageSrc =
               item.images?.[0] ||
               "https://placehold.co/400x400/e5e7eb/ffffff?text=IMAGE";
@@ -114,13 +128,9 @@ const BrowseItems = () => {
                 </div>
 
                 <div className="pt-2 text-left">
-                  <p className="text-[10px] text-gray-500 mb-0.5">
-                    {category}
-                  </p>
+                  <p className="text-[10px] text-gray-500 mb-0.5">{category}</p>
                   <h3 className="text-sm font-medium text-gray-900 hover:text-red-500 transition-colors duration-200">
-                    <Link to={`/items/${item._id || item.id}`}>
-                      {name}
-                    </Link>
+                    <Link to={`/items/${item._id || item.id}`}>{name}</Link>
                   </h3>
                 </div>
               </div>

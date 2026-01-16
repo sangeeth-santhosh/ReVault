@@ -103,6 +103,17 @@ export default function AdminHeader({
     navigate(routeForType(n?.type));
   };
 
+  const onClickUnreadCount = async (e) => {
+    e?.stopPropagation?.();
+    if (!unreadCount) return;
+
+    const unread = (Array.isArray(notifications) ? notifications : []).filter((n) => !n?.isRead);
+    const ids = unread.map((n) => n?._id || n?.id).filter(Boolean);
+    if (ids.length === 0) return;
+
+    await Promise.allSettled(ids.map((id) => onMarkNotificationRead?.(id)));
+  };
+
   const getId = (n) => n?._id || n?.id;
 
   const sorted = useMemo(() => {
@@ -121,8 +132,8 @@ export default function AdminHeader({
     const readSorted = sorted
       .filter((n) => n?.isRead)
       .sort((a, b) => {
-        const ad = new Date(a?.updatedAt || a?.createdAt || 0).getTime();
-        const bd = new Date(b?.updatedAt || b?.createdAt || 0).getTime();
+        const ad = new Date(a?.createdAt || 0).getTime();
+        const bd = new Date(b?.createdAt || 0).getTime();
         return bd - ad;
       });
 
@@ -179,7 +190,9 @@ export default function AdminHeader({
             <div className="absolute right-0 z-50 mt-3 w-[360px] max-w-[calc(100vw-32px)] rounded-2xl bg-white/5 border border-white/10 backdrop-blur-xl overflow-hidden">
               <div className="px-4 py-3 border-b border-white/10 flex items-center justify-between">
                 <p className="text-sm font-semibold text-white">Notifications</p>
-                <p className="text-xs text-white/60">{unreadCount} unread</p>
+                <button onClick={onClickUnreadCount} className="text-xs text-white/60">
+                  {unreadCount} unread
+                </button>
               </div>
 
               {notifications.length === 0 ? (

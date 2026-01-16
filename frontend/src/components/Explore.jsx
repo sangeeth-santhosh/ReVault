@@ -1,6 +1,8 @@
 import { useEffect } from 'react';
+import { useSearchParams } from "react-router-dom";
 
 const Explore = () => {
+  const [, setSearchParams] = useSearchParams();
  
     useEffect(() => {
     (function () {
@@ -171,7 +173,17 @@ const Explore = () => {
       <h2 className="text-3xl font-semibold justify-self-start">Explore</h2>
       <div className="relative z-10 justify-self-center -translate-x-[7.5rem] max-md:justify-self-start max-md:translate-x-0 max-md:w-full">
         <div className="flex bg-gray-100/50 p-1 rounded-xl relative max-sm:flex-wrap">
-          <button className="flex items-center gap-2 px-4 py-2 bg-white rounded-xl shadow-sm text-sm font-medium">
+          <button
+            className="flex items-center gap-2 px-4 py-2 bg-white rounded-xl shadow-sm text-sm font-medium"
+            type="button"
+            onClick={() => {
+              setSearchParams((prev) => {
+                const next = new URLSearchParams(prev);
+                next.set("condition", "used");
+                return next;
+              });
+            }}
+          >
             <svg
               className="w-4 h-4 text-black"
               fill="none"
@@ -187,7 +199,17 @@ const Explore = () => {
             </svg>
             Used
           </button>
-          <button className="flex items-center gap-2 px-4 py-2 text-[#979797] text-sm font-medium">
+          <button
+            className="flex items-center gap-2 px-4 py-2 text-[#979797] text-sm font-medium"
+            type="button"
+            onClick={() => {
+              setSearchParams((prev) => {
+                const next = new URLSearchParams(prev);
+                next.set("condition", "unused");
+                return next;
+              });
+            }}
+          >
             <svg
               className="w-4 h-4 text-[#979797]"
               fill="none"
@@ -203,7 +225,17 @@ const Explore = () => {
             </svg>
             Unused
           </button>
-          <button className="flex items-center gap-2 px-4 py-2 text-[#979797] text-sm font-medium">
+          <button
+            className="flex items-center gap-2 px-4 py-2 text-[#979797] text-sm font-medium"
+            type="button"
+            onClick={() => {
+              setSearchParams((prev) => {
+                const next = new URLSearchParams(prev);
+                next.set("condition", "surplus");
+                return next;
+              });
+            }}
+          >
             <svg
               className="w-4 h-4 text-[#979797]"
               fill="none"
