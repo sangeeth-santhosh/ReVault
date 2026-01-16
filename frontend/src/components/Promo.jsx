@@ -19,7 +19,7 @@ const Promo = () => {
             </button>
           </div>
           <img
-            src={Images.Spidi2}
+            src={Images.Spidi}
             className="absolute right-0 top-0 h-full w-3/5 object-contain object-right mix-blend-multiply opacity-80 max-sm:w-1/2"
             alt="Promo"
           />
