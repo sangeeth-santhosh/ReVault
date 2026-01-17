@@ -62,18 +62,39 @@ export const AuthProvider = ({ children }) => {
 						return;
 					}
 
+					// Rehydrate immediately so navigation/refresh doesn't flicker to "logged out".
+					if (isMounted) {
+						setToken(storedToken);
+						if (storedUser) {
+							setUser(storedUser);
+						} else {
+							const decoded = decodeJwtPayload(storedToken);
+							if (decoded?.id) setUser({ id: decoded.id, role: decoded.role });
+						}
+					}
+
 					try {
 						const me = await fetchMe();
 						if (!isMounted) return;
 						if (!me?.user) {
+							// Treat missing user like unauthorized.
 							clearSession();
 							setLoading(false);
 							return;
 						}
 						setUser(me.user || storedUser);
 						setToken(storedToken);
+						// Keep storage in sync with freshest user payload.
+						localStorage.setItem(
+							AUTH_STORAGE_KEY,
+							JSON.stringify({ user: me.user || storedUser, token: storedToken })
+						);
 					} catch (err) {
-						if (isMounted) clearSession();
+						// Only clear session on explicit auth failures.
+						const status = err?.status;
+						if (isMounted && (status === 401 || status === 403)) {
+							clearSession();
+						}
 					}
 				} catch (err) {
 					if (isMounted) clearSession();

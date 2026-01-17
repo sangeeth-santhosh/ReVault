@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react';
 import requestService from '../../services/requestService.js';
-import PaperPlane from '../../components/PaperPlanej.jsx';
 
 const formatShortDate = (value) => {
   if (!value) return '—';
@@ -59,9 +58,7 @@ const IncomingRequests = () => {
       </div>
 
       {loading ? (
-        <div className="text-sm text-gray-600">
-          <PaperPlane />
-        </div>
+        <div className="text-sm text-gray-600"></div>
       ) : null}
       {error ? <p className="text-sm text-red-600">{error}</p> : null}
 

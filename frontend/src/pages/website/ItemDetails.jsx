@@ -3,7 +3,6 @@ import { Link, useParams } from "react-router-dom";
 import inventoryService from "../../services/inventoryService.js";
 import requestService from "../../services/requestService.js";
 import useAuth from "../../hooks/useAuth.js";
-import PaperPlane from "../../components/PaperPlanej.jsx";
 
 const ItemDetails = () => {
   const { id } = useParams();
@@ -116,9 +115,7 @@ const ItemDetails = () => {
   return (
     <>
       {loading ? (
-        <div className="text-sm text-gray-600">
-          <PaperPlane />
-        </div>
+        <div className=""></div>
       ) : null}
       {error ? <p className="text-sm text-red-600">{error}</p> : null}
       {!loading && !item ? (
@@ -132,7 +129,7 @@ const ItemDetails = () => {
               <div className="lg:grid lg:grid-cols-2 lg:gap-8">
                 {/* Images Section */}
                 <div className="space-y-4">
-                  <div className="w-full h-96 bg-white rounded-lg overflow-hidden border border-gray-200 flex items-center justify-center">
+                  <div className="w-full h-96 bg-white rounded-2xl overflow-hidden border border-gray-200 flex items-center justify-center">
                     {mainImage ? (
                       <img
                         src={mainImage}
@@ -152,7 +149,7 @@ const ItemDetails = () => {
                           key={idx}
                           type="button"
                           onClick={() => setActiveImage(idx)}
-                          className={`w-20 h-20 rounded border flex items-center justify-center overflow-hidden flex-shrink-0 ${
+                          className={`w-20 h-20 rounded-2xl border flex items-center justify-center overflow-hidden flex-shrink-0 ${
                             activeImage === idx
                               ? "border-gray-900"
                               : "border-gray-200"

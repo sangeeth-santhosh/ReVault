@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import inventoryService from '../../services/inventoryService.js';
-import PaperPlane from '../../components/PaperPlanej.jsx';
 
 const MyInventory = () => {
   const [items, setItems] = useState([]);
@@ -50,9 +49,7 @@ const MyInventory = () => {
       </div>
 
       {loading ? (
-        <div className="text-sm text-gray-600">
-          <PaperPlane />
-        </div>
+        <div className="text-sm text-gray-600"></div>
       ) : null}
       {error ? <p className="text-sm text-red-600">{error}</p> : null}
       {actionError ? <p className="text-sm text-red-600">{actionError}</p> : null}

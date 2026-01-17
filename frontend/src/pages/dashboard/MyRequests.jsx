@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import requestService from '../../services/requestService.js';
-import PaperPlane from '../../components/PaperPlanej.jsx';
 
 const MyRequests = () => {
   const [requests, setRequests] = useState([]);
@@ -33,9 +32,7 @@ const MyRequests = () => {
       </div>
 
       {loading ? (
-        <div className="text-sm text-gray-600">
-          <PaperPlane />
-        </div>
+        <div className="text-sm text-gray-600"></div>
       ) : null}
       {error ? <p className="text-sm text-red-600">{error}</p> : null}
 

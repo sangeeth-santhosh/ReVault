@@ -3,6 +3,21 @@ const BASE_URL = (RAW_BASE_URL && String(RAW_BASE_URL).trim())
 	? String(RAW_BASE_URL).trim().replace(/\/+$/, '')
 	: (import.meta.env.DEV ? 'http://localhost:5000' : '');
 const AUTH_STORAGE_KEY = 'revault_auth';
+const MISSING_BASE_URL_MESSAGE = 'VITE_API_BASE_URL is not set';
+
+let inFlightCount = 0;
+
+const emitLoading = () => {
+	try {
+		window.dispatchEvent(
+			new CustomEvent('revault:loading', {
+				detail: { active: inFlightCount > 0, count: inFlightCount },
+			})
+		);
+	} catch {
+		// ignore
+	}
+};
 
 const getToken = () => {
 	try {
@@ -18,24 +33,49 @@ const getToken = () => {
 
 const request = async (path, { method = 'GET', body, headers = {} } = {}) => {
  if (!BASE_URL) {
-  throw new Error('VITE_API_BASE_URL is not set');
+  throw new Error(MISSING_BASE_URL_MESSAGE);
  }
  const token = getToken();
  const isFormData = body instanceof FormData;
 
  const normalizedPath = String(path || '').startsWith('/') ? String(path || '') : `/${path}`;
 
- const res = await fetch(`${BASE_URL}${normalizedPath}`, {
-  method,
-  headers: {
-   ...(isFormData ? {} : { 'Content-Type': 'application/json' }),
-   ...(token ? { Authorization: `Bearer ${token}` } : {}),
-   ...headers,
-  },
-  body: body ? (isFormData ? body : JSON.stringify(body)) : undefined,
- });
+	inFlightCount += 1;
+	emitLoading();
 
-	const data = await res.json().catch(() => ({}));
+	let res;
+	try {
+		res = await fetch(`${BASE_URL}${normalizedPath}`, {
+			method,
+			headers: {
+				...(isFormData ? {} : { 'Content-Type': 'application/json' }),
+				...(token ? { Authorization: `Bearer ${token}` } : {}),
+				...headers,
+			},
+			body: body ? (isFormData ? body : JSON.stringify(body)) : undefined,
+		});
+	} finally {
+		inFlightCount = Math.max(0, inFlightCount - 1);
+		emitLoading();
+	}
+
+	const contentType = (res.headers.get('content-type') || '').toLowerCase();
+	const isJson = contentType.includes('application/json');
+	let data = {};
+
+	if (isJson) {
+		data = await res.json().catch(() => ({}));
+	} else {
+		const text = await res.text().catch(() => '');
+		// Treat HTML responses as a misrouted API call (common on Vercel with SPA rewrites).
+		if (text && text.toLowerCase().includes('<!doctype html')) {
+			const err = new Error('Request failed');
+			err.status = 0;
+			err.data = { message: err.message };
+			throw err;
+		}
+		data = text ? { message: text } : {};
+	}
 	if (!res.ok) {
 		const err = new Error(data?.message || 'Request failed');
 		err.status = res.status;

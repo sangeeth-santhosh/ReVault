@@ -1,16 +1,36 @@
 import { Outlet, useLocation, useNavigate } from 'react-router-dom';
-import { useCallback, useEffect, useRef } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import Header from '../components/Header.jsx';
 import Sidebar from '../components/Sidebar.jsx';
 import useAuth from '../hooks/useAuth.js';
+import PaperPlane from '../components/PaperPlanej.jsx';
 
 const Layout = () => {
 	const location = useLocation();
 	const navigate = useNavigate();
-	const { token } = useAuth();
+	const { token, loading } = useAuth();
+	const tokenRef = useRef(null);
 	const lastPublicRef = useRef('/');
 	const lastPrivateRef = useRef('/dashboard');
 	const toastTimerRef = useRef(null);
+	const [apiLoadingCount, setApiLoadingCount] = useState(0);
+
+	useEffect(() => {
+		tokenRef.current = token;
+	}, [token]);
+
+	useEffect(() => {
+		const handler = (e) => {
+			const next = Number(e?.detail?.count);
+			setApiLoadingCount(Number.isFinite(next) ? next : 0);
+		};
+		window.addEventListener('revault:loading', handler);
+		return () => {
+			window.removeEventListener('revault:loading', handler);
+		};
+	}, []);
+
+	const showGlobalLoader = loading || apiLoadingCount > 0;
 
 	const showToast = useCallback((message) => {
 		const root = document.getElementById('toast');
@@ -99,16 +119,16 @@ const Layout = () => {
 		};
 
 		bind(dashboardBtn, () => {
-			if (!token) {
+			if (!tokenRef.current) {
 				showToast('Please log in to access this feature');
 				return;
 			}
-			navigate(lastPrivateRef.current || '/dashboard', { replace: false });
+			navigate('/dashboard', { replace: false });
 		});
 		bind(websiteBtn, () => {
 			navigate('/', { replace: false });
 		});
-	}, [navigate, showToast, token]);
+	}, [navigate, showToast]);
 
 	return (
 		<>
@@ -117,8 +137,13 @@ const Layout = () => {
 					<Sidebar />
 					<main className="flex-1 p-6 min-h-0 max-sm:p-4 flex flex-col">
 						<Header />
-						<div className="flex-1 min-h-0 overflow-y-auto">
+						<div className="flex-1 min-h-0 overflow-y-auto relative">
 							<Outlet />
+							{showGlobalLoader ? (
+								<div className="absolute inset-0 flex items-center justify-center">
+									<PaperPlane className="" />
+								</div>
+							) : null}
 						</div>
 					</main>
 				</div>

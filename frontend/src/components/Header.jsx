@@ -5,6 +5,7 @@ import Images from "../assets/Images.js";
 import Explore from "./Explore.jsx";
 import useAuth from "../hooks/useAuth.js";
 import { Bell, Search, Settings } from "lucide-react";
+import requestService from "../services/requestService.js";
 
 const NOTIF_STORAGE_KEY = "revault.notifications";
 
@@ -53,6 +54,8 @@ const Header = () => {
   const menuRef = useRef(null);
   const triggerRef = useRef(null);
   const [menuPos, setMenuPos] = useState({ top: 0, left: 0 });
+
+  const [incomingRequestCount, setIncomingRequestCount] = useState(0);
 
   const [notifOpen, setNotifOpen] = useState(false);
   const popoverRef = useRef(null);
@@ -134,6 +137,39 @@ const Header = () => {
   }, [sorted, showAllUnread]);
 
   const showSeeMore = unreadCount > 10 && !showAllUnread;
+
+  useEffect(() => {
+    let cancelled = false;
+
+    const loadIncomingRequestCount = async () => {
+      if (!token) {
+        if (!cancelled) setIncomingRequestCount(0);
+        return;
+      }
+
+      try {
+        const res = await requestService.getIncoming();
+        const list = Array.isArray(res?.data) ? res.data : [];
+        const since = Date.now() - 7 * 24 * 60 * 60 * 1000;
+
+        const count = list.filter((req) => {
+          const raw = req?.createdAt || req?.requestedAt;
+          const ts = new Date(raw || 0).getTime();
+          if (!Number.isFinite(ts)) return false;
+          return ts >= since;
+        }).length;
+
+        if (!cancelled) setIncomingRequestCount(count);
+      } catch {
+        if (!cancelled) setIncomingRequestCount(0);
+      }
+    };
+
+    loadIncomingRequestCount();
+    return () => {
+      cancelled = true;
+    };
+  }, [token]);
 
   useEffect(() => {
     const handler = (e) => {
@@ -372,6 +408,32 @@ const Header = () => {
     setOpen((v) => !v);
   };
 
+  const showAccessToast = () => {
+    try {
+      window.dispatchEvent(
+        new CustomEvent("revault:toast", {
+          detail: { message: "Please log in to access this feature" },
+        })
+      );
+    } catch {
+      // ignore
+    }
+  };
+
+  const onClickDashboardToggle = (e) => {
+    e?.preventDefault?.();
+    if (!token) {
+      showAccessToast();
+      return;
+    }
+    navigate("/dashboard", { replace: false });
+  };
+
+  const onClickWebsiteToggle = (e) => {
+    e?.preventDefault?.();
+    navigate("/", { replace: false });
+  };
+
   return (
     <>
       <div
@@ -384,7 +446,7 @@ const Header = () => {
       >
         <header className="relative flex items-center justify-between mb-6 max-md:flex-col max-md:items-start max-md:gap-4">
           <div className="flex items-start gap-2">
-            <span className="text-4xl font-semibold leading-none">0</span>
+            <span className="text-4xl font-semibold leading-none">{incomingRequestCount}</span>
             <div className="h-4 w-px bg-gray-200 self-center"></div>
             <div className="leading-tight mt-[1px]">
               <div className="text-sm font-semibold text-black">Requests</div>
@@ -392,10 +454,18 @@ const Header = () => {
             </div>
           </div>
           <div className="fixed top-6 left-1/2 -translate-x-1/2 flex bg-gray-100 p-1.5 rounded-full z-20 max-md:static max-md:translate-x-0 max-md:mx-auto">
-            <button className="px-6 py-2 bg-white rounded-full shadow-sm text-sm font-medium text-black">
+            <button
+              data-router-bound="1"
+              onClick={onClickDashboardToggle}
+              className="px-6 py-2 bg-white rounded-full shadow-sm text-sm font-medium text-black"
+            >
               Dashboard
             </button>
-            <button className="px-6 py-2 text-[#979797] text-sm font-medium">
+            <button
+              data-router-bound="1"
+              onClick={onClickWebsiteToggle}
+              className="px-6 py-2 text-[#979797] text-sm font-medium"
+            >
               Website
             </button>
           </div>

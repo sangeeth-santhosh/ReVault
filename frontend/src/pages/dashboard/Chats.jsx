@@ -2,7 +2,6 @@ import { useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import chatService from '../../services/chatService.js';
 import requestService from '../../services/requestService.js';
-import PaperPlane from '../../components/PaperPlanej.jsx';
 
 const Chats = () => {
   const [threads, setThreads] = useState([]);
@@ -87,9 +86,7 @@ const Chats = () => {
         <div className="flex items-center justify-between text-sm font-semibold text-gray-700">
           <h2>Threads</h2>
           {loadingThreads ? (
-            <div className="text-xs text-gray-500">
-              <PaperPlane className="" />
-            </div>
+            <div className="text-xs text-gray-500"></div>
           ) : null}
         </div>
         {error ? <p className="text-xs text-red-600">{error}</p> : null}

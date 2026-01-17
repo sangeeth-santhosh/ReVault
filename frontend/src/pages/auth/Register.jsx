@@ -7,6 +7,7 @@ import apiClient from '../../services/apiClient.js';
 const LEGACY_PENDING_KEY = 'revault.registerRequest';
 const REG_IDENTITY_KEY = 'revault.registrationIdentity';
 const REG_STATUS_KEY = 'revault.registrationStatusByEmail';
+const NOTIF_STORAGE_KEY = 'revault.notifications';
 
 const EMPTY_FORM = {
   businessName: '',
@@ -52,14 +53,26 @@ const clearLegacyPending = () => {
 };
 
 const pushNotification = (message) => {
+  const notification = {
+    message,
+    createdAt: new Date().toISOString(),
+    isRead: false,
+    type: 'business_request',
+  };
+
+  try {
+    const raw = localStorage.getItem(NOTIF_STORAGE_KEY);
+    const parsed = raw ? JSON.parse(raw) : [];
+    const list = Array.isArray(parsed) ? parsed : [];
+    localStorage.setItem(NOTIF_STORAGE_KEY, JSON.stringify([notification, ...list]));
+  } catch {
+    // ignore
+  }
+
   try {
     window.dispatchEvent(
       new CustomEvent('revault:notification', {
-        detail: {
-          message,
-          createdAt: new Date().toISOString(),
-          isRead: false,
-        },
+        detail: notification,
       })
     );
   } catch {
@@ -120,35 +133,32 @@ const Register = () => {
 
   const elapsed = formatElapsed(appliedAt);
 
+  const applyBackendState = useCallback(({ status, appliedAt: backendAppliedAt }) => {
+    const nextStatus = status === 'pending' ? 'pending' : 'none';
+
+    // Button state is always backend-driven.
+    setRequestStatus(nextStatus);
+    setAppliedAt(nextStatus === 'pending' ? backendAppliedAt || null : null);
+
+    // Effect safety: never reset while typing.
+    // Only clear inputs when status transitions pending -> approved/rejected.
+    if (prevRequestStatusRef.current === 'pending' && (status === 'approved' || status === 'rejected')) {
+      setForm(EMPTY_FORM);
+    }
+
+    prevRequestStatusRef.current = nextStatus;
+  }, []);
+
+  const fetchRegistrationStatus = useCallback(async (email) => {
+    const normalizedEmail = (email || '').toString().trim();
+    if (!normalizedEmail) {
+      return { exists: false, status: null, appliedAt: null };
+    }
+    return apiClient.get(`/auth/registration-status?email=${encodeURIComponent(normalizedEmail)}`);
+  }, []);
+
   useEffect(() => {
     let isMounted = true;
-
-    const applyBackendState = ({ status, appliedAt: backendAppliedAt }) => {
-      const nextStatus = status === 'pending' ? 'pending' : 'none';
-
-      // Button state is always backend-driven.
-      setRequestStatus(nextStatus);
-      setAppliedAt(nextStatus === 'pending' ? backendAppliedAt || null : null);
-
-      // Effect safety: never reset while typing.
-      // Only clear inputs when status transitions pending -> approved/rejected.
-      if (
-        prevRequestStatusRef.current === 'pending' &&
-        (status === 'approved' || status === 'rejected')
-      ) {
-        setForm(EMPTY_FORM);
-      }
-
-      prevRequestStatusRef.current = nextStatus;
-    };
-
-    const fetchRegistrationStatus = async (email) => {
-      const normalizedEmail = (email || '').toString().trim();
-      if (!normalizedEmail) {
-        return { exists: false, status: null, appliedAt: null };
-      }
-      return apiClient.get(`/auth/registration-status?email=${encodeURIComponent(normalizedEmail)}`);
-    };
 
     const reconcile = async () => {
       // Safety: never allow stale local pending to lock the form.
@@ -211,7 +221,53 @@ const Register = () => {
     return () => {
       isMounted = false;
     };
-  }, [user?.status, user?.appliedAt]);
+  }, [applyBackendState, fetchRegistrationStatus, user?.status, user?.appliedAt]);
+
+  useEffect(() => {
+    if (requestStatus !== 'pending') return;
+
+    const storedIdentity = readIdentity();
+    const email = (storedIdentity?.email || '').trim();
+    if (!email) return;
+
+    const normalizedEmail = email.toLowerCase();
+    let cancelled = false;
+
+    const tick = async () => {
+      try {
+        const statusRes = await fetchRegistrationStatus(email);
+        if (cancelled) return;
+
+        const backendStatus = statusRes?.status ?? null;
+        applyBackendState({ status: backendStatus, appliedAt: statusRes?.appliedAt || null });
+
+        const previousStatus = readStatusByEmail(normalizedEmail);
+        const nextKnownStatus = backendStatus ? String(backendStatus) : null;
+
+        if (nextKnownStatus && nextKnownStatus !== previousStatus) {
+          if (nextKnownStatus === 'approved') {
+            if (previousStatus === 'deactivated') {
+              pushNotification('Admin reactivated this business request. You can now login!');
+            } else {
+              pushNotification('Admin verified and approved this business request. You can now login!');
+            }
+          }
+          if (nextKnownStatus === 'rejected') pushNotification('Admin rejected this business request.');
+          if (nextKnownStatus === 'deactivated') pushNotification('Admin deactivated this business request.');
+          writeStatusByEmail(normalizedEmail, nextKnownStatus);
+        }
+      } catch {
+        // ignore polling errors
+      }
+    };
+
+    tick();
+    const id = setInterval(tick, 10_000);
+    return () => {
+      cancelled = true;
+      clearInterval(id);
+    };
+  }, [applyBackendState, fetchRegistrationStatus, requestStatus]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;

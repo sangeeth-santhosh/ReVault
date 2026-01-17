@@ -2,7 +2,6 @@ import { useEffect, useMemo, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 // import Promo from "../../components/Promo.jsx";
 import inventoryService from "../../services/inventoryService.js";
-import PaperPlane from "../../components/PaperPlanej.jsx";
 
 const BrowseItems = () => {
   const [items, setItems] = useState([]);
@@ -77,9 +76,7 @@ const BrowseItems = () => {
 
           {loading ? (
             <div className="col-span-full">
-              <div className="text-sm text-gray-600">
-                <PaperPlane className="" />
-              </div>
+              <div className="text-sm text-gray-600"></div>
             </div>
           ) : null}
 

@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react';
 import useAuth from '../../hooks/useAuth.js';
 import transactionService from '../../services/transactionService.js';
-import PaperPlane from '../../components/PaperPlanej.jsx';
 
 const Transactions = () => {
   const { user } = useAuth();
@@ -38,11 +37,7 @@ const Transactions = () => {
         <p className="text-sm text-gray-600">Track settlement and delivery milestones.</p>
       </div>
 
-      {loading ? (
-        <div className="text-sm text-gray-600">
-          <PaperPlane />
-        </div>
-      ) : null}
+        {loading ? <div className="text-sm text-gray-600"></div> : null}
       {error ? <p className="text-sm text-red-600">{error}</p> : null}
 
       {!loading && !transactions.length ? (

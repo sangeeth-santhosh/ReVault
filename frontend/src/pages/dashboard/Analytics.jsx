@@ -4,7 +4,6 @@ import inventoryService from '../../services/inventoryService.js';
 import requestService from '../../services/requestService.js';
 import transactionService from '../../services/transactionService.js';
 import reportService from '../../services/reportService.js';
-import PaperPlane from '../../components/PaperPlanej.jsx';
 
 const Analytics = () => {
   const { user } = useAuth();
@@ -143,9 +142,7 @@ const Analytics = () => {
             <span className="text-xs text-gray-500">Last 5 updates</span>
           </div>
           {loading ? (
-            <div className="mt-3 text-sm text-gray-600">
-              <PaperPlane className="" />
-            </div>
+            <div className="mt-3 text-sm text-gray-600"></div>
           ) : null}
           {!loading && !activity.length ? (
             <p className="mt-3 text-sm text-gray-600">No recent activity yet.</p>

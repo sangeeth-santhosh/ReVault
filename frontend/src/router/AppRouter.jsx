@@ -15,7 +15,6 @@ import Transactions from '../pages/dashboard/Transactions.jsx';
 import Reports from '../pages/dashboard/Reports.jsx';
 import Settings from '../pages/dashboard/Settings.jsx';
 import useAuth from '../hooks/useAuth.js';
-import PaperPlane from '../components/PaperPlanej.jsx';
 
 const PublicShell = () => <Outlet />;
 
@@ -25,11 +24,7 @@ const ProtectedRoute = ({ children }) => {
 	const { user, loading } = useAuth();
 
 	if (loading) {
-		return (
-			<div className="flex h-screen items-center justify-center">
-				<PaperPlane className="w-16 h-16" />
-			</div>
-		);
+		return null;
 	}
 
 	if (!user) {
