@@ -4,7 +4,7 @@ import { DotLottieReact } from '@lottiefiles/dotlottie-react';
 const PaperPlane = ({ className }) => {
   const wrapperClassName = (typeof className === 'string' && className.trim())
     ? className
-    : 'w-10 h-10';
+    : 'w-100 h-100';
   return (
     <div className={wrapperClassName} role="img" aria-label="Loading">
       <DotLottieReact
