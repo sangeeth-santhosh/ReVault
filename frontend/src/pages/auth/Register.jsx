@@ -1,8 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import useAuth from '../../hooks/useAuth.js';
-import { register as registerService } from '../../services/authService.js';
-import apiClient from '../../services/apiClient.js';
+import { getRegistrationStatus, register as registerService } from '../../services/authService.js';
 
 const LEGACY_PENDING_KEY = 'revault.registerRequest';
 const REG_IDENTITY_KEY = 'revault.registrationIdentity';
@@ -154,7 +153,7 @@ const Register = () => {
     if (!normalizedEmail) {
       return { exists: false, status: null, appliedAt: null };
     }
-    return apiClient.get(`/auth/registration-status?email=${encodeURIComponent(normalizedEmail)}`);
+    return getRegistrationStatus(normalizedEmail);
   }, []);
 
   useEffect(() => {
@@ -317,9 +316,7 @@ const Register = () => {
       }
 
       // Canonical: rebuild button state from backend status endpoint.
-      const statusRes = await apiClient.get(
-        `/auth/registration-status?email=${encodeURIComponent(payload.email)}`
-      );
+      const statusRes = await getRegistrationStatus(payload.email);
       const backendStatus = statusRes?.status ?? null;
       const nextStatus = backendStatus === 'pending' ? 'pending' : 'none';
       setRequestStatus(nextStatus);

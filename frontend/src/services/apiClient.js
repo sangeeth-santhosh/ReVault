@@ -85,11 +85,47 @@ const request = async (path, { method = 'GET', body, headers = {} } = {}) => {
 	return data;
 };
 
+const requestBlob = async (path, { method = 'GET', headers = {} } = {}) => {
+	if (!BASE_URL) {
+		throw new Error(MISSING_BASE_URL_MESSAGE);
+	}
+	const token = getToken();
+	const normalizedPath = String(path || '').startsWith('/') ? String(path || '') : `/${path}`;
+
+	inFlightCount += 1;
+	emitLoading();
+
+	let res;
+	try {
+		res = await fetch(`${BASE_URL}${normalizedPath}`, {
+			method,
+			headers: {
+				...(token ? { Authorization: `Bearer ${token}` } : {}),
+				...headers,
+			},
+		});
+	} finally {
+		inFlightCount = Math.max(0, inFlightCount - 1);
+		emitLoading();
+	}
+
+	if (!res.ok) {
+		const data = await res.json().catch(() => ({}));
+		const err = new Error(data?.message || 'Request failed');
+		err.status = res.status;
+		err.data = data;
+		throw err;
+	}
+
+	return res.blob();
+};
+
 const apiClient = {
 	get: (path) => request(path, { method: 'GET' }),
 	post: (path, body) => request(path, { method: 'POST', body }),
 	put: (path, body) => request(path, { method: 'PUT', body }),
 	delete: (path) => request(path, { method: 'DELETE' }),
+	getBlob: (path) => requestBlob(path, { method: 'GET' }),
 };
 
 export default apiClient;

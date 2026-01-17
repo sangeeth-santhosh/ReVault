@@ -1,28 +1,5 @@
 import apiClient from './apiClient.js';
 
-const RAW_BASE_URL = import.meta.env.VITE_API_BASE_URL;
-const BASE_URL = (RAW_BASE_URL && String(RAW_BASE_URL).trim())
-  ? String(RAW_BASE_URL).trim().replace(/\/+$/, '')
-  : (import.meta.env.DEV ? 'http://localhost:5000' : '');
-const AUTH_STORAGE_KEY = 'revault_auth';
-
-const getToken = () => {
-  try {
-    const raw = localStorage.getItem(AUTH_STORAGE_KEY);
-    if (!raw) return null;
-    const parsed = JSON.parse(raw);
-    return parsed?.token || null;
-  } catch (err) {
-    console.warn('Unable to read auth token for reports', err);
-    return null;
-  }
-};
-
-const authHeaders = () => {
-  const token = getToken();
-  return token ? { Authorization: `Bearer ${token}` } : {};
-};
-
 export const getSummary = () => apiClient.get('/reports/summary');
 
 export const getInventoryReport = () => apiClient.get('/reports/inventory');
@@ -30,16 +7,12 @@ export const getCompletedTransactionsReport = () => apiClient.get('/reports/comp
 export const getQuantityTransferredReport = () => apiClient.get('/reports/quantity-transferred');
 
 const fetchBlob = async (path) => {
-  if (!BASE_URL) {
-    throw new Error('VITE_API_BASE_URL is not set');
-  }
-  const res = await fetch(`${BASE_URL}${path}`, {
-    headers: { ...authHeaders() },
-  });
-  if (!res.ok) {
-    throw new Error('Could not download report');
-  }
-  return res.blob();
+	try {
+		return await apiClient.getBlob(path);
+	} catch (err) {
+		if (err?.message === 'VITE_API_BASE_URL is not set') throw err;
+		throw new Error('Could not download report');
+	}
 };
 
 export const downloadInventoryCsv = () => fetchBlob('/reports/inventory/csv');

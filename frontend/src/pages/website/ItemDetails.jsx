@@ -72,7 +72,7 @@ const ItemDetails = () => {
         message: "Interested in this item",
       });
       setRequestMessage(
-        "Request sent successfully. Check My Requests for updates."
+        "Request sent successfully. Check My Requests for updates.",
       );
       setRequestedQtyInput("");
       load();
@@ -90,7 +90,7 @@ const ItemDetails = () => {
   const availableQty = Number(item?.quantity ?? 0);
   const unitLabel = item?.unit || "units";
   const userAlreadyRequested = userRequests.find(
-    (r) => (r.inventory?._id || r.inventory) === (item?._id || item?.id)
+    (r) => (r.inventory?._id || r.inventory) === (item?._id || item?.id),
   );
 
   const businessLocationText = useMemo(() => {
@@ -114,14 +114,12 @@ const ItemDetails = () => {
 
   return (
     <>
-      {loading ? (
-        <div className=""></div>
-      ) : null}
+      {loading ? <div className=""></div> : null}
       {error ? <p className="text-sm text-red-600">{error}</p> : null}
       {!loading && !item ? (
         <p className="text-sm text-gray-600">Item not found.</p>
       ) : null}
-      <div className="min-h-screen">
+      <div>
         <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-12">
           {item ? (
             <div className="space-y-8">
@@ -166,122 +164,94 @@ const ItemDetails = () => {
                   ) : null}
                 </div>
 
-                {/* Details Section */}
-                <div className="space-y-6">
-                  {/* Header */}
-                  <div>
-                    <h1 className="text-3xl font-bold text-gray-900 mb-2">
-                      {item.title || item.name || "Untitled Item"}
-                    </h1>
-                    <p className="text-sm text-gray-600">
-                      Posted{" "}
-                      {item.createdAt
-                        ? new Date(item.createdAt).toLocaleDateString()
-                        : "—"}
-                    </p>
-                  </div>
-
-                  {/* Core Details */}
-                  <div className="bg-white p-4 rounded-lg border border-gray-200 space-y-3">
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm font-medium text-gray-600">
-                        Category
-                      </span>
-                      <span className="text-sm text-gray-900">
-                        {item.category || "—"}
-                      </span>
+                {/* Details */}
+                <div className="h-96 flex flex-col justify-between">
+                  <div className="space-y-6">
+                    <div>
+                      <h1 className="text-xl font-semibold text-gray-900">
+                        {item.title}
+                      </h1>
+                      <p className="mt-1 text-xs text-gray-500">
+                        Posted {new Date(item.createdAt).toLocaleDateString()}
+                      </p>
                     </div>
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm font-medium text-gray-600">
-                        Condition
-                      </span>
-                      <span className="text-sm text-gray-900">
-                        {item.condition || "—"}
-                      </span>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm font-medium text-gray-600">
-                        Available Quantity
-                      </span>
-                      <span className="text-sm text-gray-900">
-                        {availableQty} {unitLabel}
-                      </span>
-                    </div>
-                  </div>
 
-                  {/* Description */}
-                  <div>
-                    <h3 className="text-sm font-semibold text-gray-900 mb-2">
-                      Description
-                    </h3>
-                    <p className="text-sm text-gray-700 leading-relaxed">
-                      {item.description || "No description provided."}
-                    </p>
-                  </div>
-
-                  {/* Business Details */}
-                  {item.owner ? (
-                    <div className="bg-white p-4 rounded-lg border border-gray-200 space-y-2">
-                      <h3 className="text-sm font-semibold text-gray-900">
-                        Business
-                      </h3>
-                      <div className="text-sm text-gray-700">
-                        <p>
-                          {item.owner?.businessName ||
-                            item.owner?.name ||
-                            "Unknown"}
+                    {/* Meta row */}
+                    <div className="grid grid-cols-3 gap-6">
+                      <div>
+                        <p className="text-[11px] uppercase tracking-wide text-gray-500">
+                          Category
                         </p>
-                        <p className="text-xs text-gray-600">
-                          {businessLocationText
-                            ? businessLocationText
-                            : "Location not provided"}
+                        <p className="text-sm font-medium text-gray-900">
+                          {item.category}
+                        </p>
+                      </div>
+                      <div>
+                        <p className="text-[11px] uppercase tracking-wide text-gray-500">
+                          Condition
+                        </p>
+                        <p className="text-sm font-medium text-gray-900">
+                          {item.condition}
+                        </p>
+                      </div>
+                      <div>
+                        <p className="text-[11px] uppercase tracking-wide text-gray-500">
+                          Available
+                        </p>
+                        <p className="text-sm font-medium text-gray-900">
+                          {availableQty} {unitLabel}
                         </p>
                       </div>
                     </div>
-                  ) : null}
-                  <p>request item</p>
-                  {/* Request Section */}
-                  <div className="bg-white p-4 rounded-lg border border-gray-200 space-y-3">
+
+                    <div>
+                      <p className="text-[11px] uppercase tracking-wide text-gray-500 mb-1">
+                        Description
+                      </p>
+                      <p className="text-sm text-gray-700 leading-relaxed line-clamp-4">
+                        {item.description}
+                      </p>
+                    </div>
+
+                    {item.owner && (
+                      <div>
+                        <p className="text-[11px] uppercase tracking-wide text-gray-500">
+                          Business
+                        </p>
+                        <p className="text-sm font-medium text-gray-900">
+                          {item.owner.businessName}
+                        </p>
+                        <p className="text-xs text-gray-500">
+                          {businessLocationText}
+                        </p>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Bottom */}
+                  <div className="space-y-3">
                     {availableQty === 0 ? (
-                      <p className="text-sm text-amber-700 bg-amber-50 px-3 py-2 rounded">
+                      <p className="text-sm text-amber-700">
                         This item is currently unavailable
                       </p>
                     ) : isOwner ? (
-                      <p className="text-sm text-blue-700 bg-blue-50 px-3 py-2 rounded">
+                      <p className="text-sm -mt-20 text-blue-700 border border-blue-200 rounded-xl px-3 py-2 max-w-[243px]">
                         You are the owner of this inventory
                       </p>
-                    ) : userAlreadyRequested ? (
-                      <div>
-                        <p className="text-sm text-gray-700 mb-2">
-                          You already requested this item
-                        </p>
-                        <p className="text-xs text-gray-600">
-                          Status:{" "}
-                          <span className="font-semibold capitalize">
-                            {userAlreadyRequested.status || "pending"}
-                          </span>
-                        </p>
-                      </div>
                     ) : !user ? (
                       <Link
-                        to={`/login?redirect=${encodeURIComponent(
-                          window.location.pathname
-                        )}`}
-                        className="w-full inline-block text-center rounded-md bg-gray-900 px-4 py-2 text-white text-sm font-semibold hover:bg-gray-800"
+                        to={`/login?redirect=${encodeURIComponent(window.location.pathname)}`}
+                        className="block w-full bg-gray-900 px-4 py-2 text-center text-sm font-semibold text-white hover:bg-gray-800"
                       >
                         Login to Request
                       </Link>
                     ) : (
                       <form onSubmit={handleRequest} className="space-y-3">
                         <div>
-                          <label
-                            htmlFor="qty"
-                            className="text-xs font-medium text-gray-700"
-                          >
-                            Requested Quantity
+                          <label className="text-xs font-medium text-gray-600">
+                            Request Quantity
                           </label>
                           <input
-                            id="qty"
                             type="number"
                             min="1"
                             max={availableQty}
@@ -289,27 +259,25 @@ const ItemDetails = () => {
                             onChange={(e) =>
                               setRequestedQtyInput(e.target.value)
                             }
-                            placeholder="Enter quantity"
-                            className="w-full mt-1 rounded border border-gray-300 px-3 py-2 text-sm focus:border-gray-500 focus:outline-none"
+                            placeholder={`Maximum ${availableQty} ${unitLabel}`}
+                            className="mt-1 w-full rounded-xl border border-gray-300 px-3 py-2 text-sm placeholder:text-xs placeholder:font-medium placeholder:text-gray-500 focus:border-gray-500 focus:outline-none"
                           />
-                          <p className="mt-1 text-xs text-gray-600">
-                            Available: {availableQty} {unitLabel}
-                          </p>
                         </div>
-                        {requestingError ? (
-                          <p className="text-xs text-red-600 bg-red-50 px-2 py-1 rounded">
+
+                        {requestingError && (
+                          <p className="text-xs text-red-600">
                             {requestingError}
                           </p>
-                        ) : null}
-                        {requestMessage ? (
-                          <p className="text-xs text-emerald-700 bg-emerald-50 px-2 py-1 rounded">
+                        )}
+                        {requestMessage && (
+                          <p className="text-xs text-emerald-700">
                             {requestMessage}
                           </p>
-                        ) : null}
+                        )}
+
                         <button
-                          type="submit"
                           disabled={requesting}
-                          className="w-full rounded-md bg-gray-900 px-4 py-2 text-white text-sm font-semibold hover:bg-gray-800 disabled:opacity-60"
+                          className="w-full bg-gray-900 px-4 py-2 rounded-xl text-sm font-semibold text-white hover:bg-gray-800 disabled:opacity-60"
                         >
                           {requesting ? "Sending…" : "Send Request"}
                         </button>
