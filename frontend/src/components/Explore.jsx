@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import { useSearchParams } from "react-router-dom";
 
-const Explore = () => {
+const Explore = ( {title} ) => {
   const [, setSearchParams] = useSearchParams();
  
     useEffect(() => {
@@ -170,7 +170,7 @@ const Explore = () => {
       id="section-explore"
       className="relative grid grid-cols-[1fr_auto_1fr] items-center mb-6 border-b border-gray-300 -mx-6 px-6 py-6 max-md:grid-cols-1 max-md:gap-4 max-md:py-4 max-sm:-mx-4 max-sm:px-4"
     >
-      <h2 className="text-3xl font-semibold justify-self-start">Explore</h2>
+      <h2 className="text-3xl font-semibold justify-self-start">{title}</h2>
       <div className="relative z-10 justify-self-center -translate-x-[7.5rem] max-md:justify-self-start max-md:translate-x-0 max-md:w-full">
         <div className="flex bg-gray-100/50 p-1 rounded-xl relative max-sm:flex-wrap">
           <button

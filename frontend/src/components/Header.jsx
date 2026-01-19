@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { createPortal } from "react-dom";
 import Images from "../assets/Images.js";
 import Explore from "./Explore.jsx";
@@ -49,6 +49,7 @@ const routeForType = (type) => {
 
 const Header = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const { user, token, logout } = useAuth();
   const [open, setOpen] = useState(false);
   const menuRef = useRef(null);
@@ -60,7 +61,7 @@ const Header = () => {
   const [notifOpen, setNotifOpen] = useState(false);
   const popoverRef = useRef(null);
   const [notifications, setNotifications] = useState(() =>
-    readStoredNotifications()
+    readStoredNotifications(),
   );
   const [showAllUnread, setShowAllUnread] = useState(false);
   const notifBtnRef = useRef(null);
@@ -72,7 +73,7 @@ const Header = () => {
 
   const unreadCount = useMemo(
     () => notifications.filter((n) => !n?.isRead).length,
-    [notifications]
+    [notifications],
   );
 
   const formatWhen = useMemo(
@@ -97,7 +98,7 @@ const Header = () => {
       if (diffHr < 48) return "1 day ago";
       return d.toLocaleDateString("en-US", { month: "short", day: "2-digit" });
     },
-    []
+    [],
   );
 
   const sorted = useMemo(() => {
@@ -125,7 +126,7 @@ const Header = () => {
       showAllUnread || unread.length <= 10 ? unread : unread.slice(0, 10);
     const allowedUnreadIds = new Set(unreadAllowed.map(getId).filter(Boolean));
     const allowedReadIds = new Set(
-      readSorted.slice(0, 3).map(getId).filter(Boolean)
+      readSorted.slice(0, 3).map(getId).filter(Boolean),
     );
 
     return sorted.filter((n) => {
@@ -228,8 +229,8 @@ const Header = () => {
       prev.map((x) =>
         getId(x) === id
           ? { ...x, isRead: true, updatedAt: new Date().toISOString() }
-          : x
-      )
+          : x,
+      ),
     );
 
     const to = routeForType(n?.type);
@@ -243,8 +244,8 @@ const Header = () => {
     const now = new Date().toISOString();
     setNotifications((prev) =>
       (Array.isArray(prev) ? prev : []).map((n) =>
-        n?.isRead ? n : { ...n, isRead: true, updatedAt: now }
-      )
+        n?.isRead ? n : { ...n, isRead: true, updatedAt: now },
+      ),
     );
   };
 
@@ -319,7 +320,7 @@ const Header = () => {
 
       const left = Math.max(
         8,
-        Math.min(window.innerWidth - width - 8, rect.right - width)
+        Math.min(window.innerWidth - width - 8, rect.right - width),
       );
       const top = Math.min(window.innerHeight - 8, rect.bottom + gap);
       setNotifPos({ top, left });
@@ -365,7 +366,7 @@ const Header = () => {
       const gap = 12;
       const left = Math.max(
         8,
-        Math.min(window.innerWidth - width - 8, rect.right - width)
+        Math.min(window.innerWidth - width - 8, rect.right - width),
       );
       const top = Math.min(window.innerHeight - 8, rect.bottom + gap);
       setMenuPos({ top, left });
@@ -413,7 +414,7 @@ const Header = () => {
       window.dispatchEvent(
         new CustomEvent("revault:toast", {
           detail: { message: "Please log in to access this feature" },
-        })
+        }),
       );
     } catch {
       // ignore
@@ -434,6 +435,27 @@ const Header = () => {
     navigate("/", { replace: false });
   };
 
+  const exploreTitle =
+    location.pathname === "/dashboard"
+      ? "Dashboard"
+      : location.pathname === "/requests/incoming"
+        ? "Incoming Requests"
+        : location.pathname === "/requests/my"
+          ? "My Requests"
+          : location.pathname === "/inventory/my"
+            ? "My Inventory"
+            : location.pathname === "/chats"
+              ? "Chats"
+              : location.pathname === "/transactions"
+                ? "Transactions"
+                : location.pathname === "/reports"
+                  ? "Reports"
+                  : location.pathname === "/inventory/add"
+                    ? "Add Inventory"
+                    : location.pathname.startsWith("/inventory/my")
+                      ? "Update Inventory"
+                      : "Explore";
+
   return (
     <>
       <div
@@ -446,13 +468,16 @@ const Header = () => {
       >
         <header className="relative flex items-center justify-between mb-6 max-md:flex-col max-md:items-start max-md:gap-4">
           <div className="flex items-start gap-2">
-            <span className="text-4xl font-semibold leading-none">{incomingRequestCount}</span>
-            <div className="h-4 w-px bg-gray-200 self-center"></div>
+            <span className="text-4xl font-semibold leading-none">
+              {incomingRequestCount}
+            </span>
+            <div className="h-4 w-px bg-gray-300 mt-1 self-center"></div>
             <div className="leading-tight mt-[1px]">
               <div className="text-sm font-semibold text-black">Requests</div>
               <div className="text-xs text-gray-400">Last 7 days</div>
             </div>
           </div>
+
           <div className="fixed top-6 left-1/2 -translate-x-1/2 flex bg-gray-100 p-1.5 rounded-full z-20 max-md:static max-md:translate-x-0 max-md:mx-auto">
             <button
               data-router-bound="1"
@@ -557,7 +582,7 @@ const Header = () => {
                       </div>
                     )}
                   </div>,
-                  document.body
+                  document.body,
                 )
               : null}
             <div className="flex items-center gap-3 pl-4 border-l border-gray-200 relative">
@@ -572,54 +597,10 @@ const Header = () => {
               >
                 {displayName}
               </span>
-              {token && open
-                ? createPortal(
-                    <div
-                      ref={menuRef}
-                      className="w-56 bg-white border border-gray-200 rounded-2xl shadow-xl p-2 flex flex-col"
-                      style={{
-                        position: "fixed",
-                        top: menuPos.top,
-                        left: menuPos.left,
-                        zIndex: 60,
-                      }}
-                      onClick={(e) => {
-                        const btn = e.target?.closest?.(
-                          'button[data-action-toast="Logged out (demo)"]'
-                        );
-                        if (!btn) return;
-                        logout();
-                        setOpen(false);
-                      }}
-                    >
-                      <button
-                        type="button"
-                        data-action-toast="Logged out (demo)"
-                        className="mt-auto flex items-center gap-3 px-4 py-3 text-black hover:text-red-500 transition-colors"
-                      >
-                        <svg
-                          className="w-5 h-5"
-                          fill="none"
-                          stroke="#000000"
-                          viewBox="0 0 24 24"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth="2"
-                            d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
-                          ></path>
-                        </svg>
-                        <span className="text-sm font-medium">Log out</span>
-                      </button>
-                    </div>,
-                    document.body
-                  )
-                : null}
             </div>
           </div>
         </header>
-        <Explore />
+        {<Explore title={exploreTitle} />}
       </div>
     </>
   );

@@ -92,10 +92,7 @@ const Analytics = () => {
 
   return (
     <section className="space-y-8">
-      <div className="flex flex-col gap-2">
-        <h1 className="text-2xl font-semibold text-gray-900">Dashboard</h1>
-        <p className="text-sm text-gray-600">Overview of your surplus pipeline.</p>
-      </div>
+      {/* Removed page title and subtitle */}
 
       <div className="grid gap-6 lg:grid-cols-3">
         <div className="lg:col-span-2 rounded-xl border border-gray-200 bg-white p-6 shadow-sm">

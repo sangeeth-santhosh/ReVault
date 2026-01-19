@@ -78,10 +78,7 @@ const Reports = () => {
 
   return (
     <section className="space-y-6">
-      <div className="space-y-1">
-        <h1 className="text-2xl font-semibold text-gray-900">Reports</h1>
-        <p className="text-sm text-gray-600">Export insights on inventory, requests, and transactions.</p>
-      </div>
+      {/* Removed page title and subtitle */}
 
       {error ? <p className="text-sm text-red-600">{error}</p> : null}
 

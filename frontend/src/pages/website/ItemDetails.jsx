@@ -231,7 +231,7 @@ const ItemDetails = () => {
                   {/* Bottom */}
                   <div className="space-y-3">
                     {availableQty === 0 ? (
-                      <p className="text-sm text-amber-700">
+                      <p className="text-sm -mt-20 text-amber-700">
                         This item is currently unavailable
                       </p>
                     ) : isOwner ? (
@@ -241,7 +241,7 @@ const ItemDetails = () => {
                     ) : !user ? (
                       <Link
                         to={`/login?redirect=${encodeURIComponent(window.location.pathname)}`}
-                        className="block w-full bg-gray-900 px-4 py-2 text-center text-sm font-semibold text-white hover:bg-gray-800"
+                        className="block w-full rounded-xl bg-gray-900 px-4 py-2 text-center text-sm font-semibold text-white hover:bg-gray-800"
                       >
                         Login to Request
                       </Link>

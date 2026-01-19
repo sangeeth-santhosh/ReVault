@@ -39,10 +39,7 @@ const MyInventory = () => {
   return (
     <section className="space-y-6">
       <div className="flex items-center justify-between">
-        <div className="space-y-1">
-          <h1 className="text-2xl font-semibold text-gray-900">My inventory</h1>
-          <p className="text-sm text-gray-600">Track live listings and engagement.</p>
-        </div>
+        {/* Removed page title and subtitle */}
         <Link to="/inventory/add" className="rounded-md bg-gray-900 px-4 py-2 text-sm text-white hover:bg-gray-800">
           Add listing
         </Link>

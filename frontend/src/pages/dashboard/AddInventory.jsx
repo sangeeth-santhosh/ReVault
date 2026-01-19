@@ -336,10 +336,7 @@ const AddInventory = () => {
 
   return (
     <section className="space-y-6">
-      <div className="space-y-1">
-        <h1 className="text-2xl font-semibold text-gray-900">{isEdit ? 'Edit inventory' : 'Add inventory'}</h1>
-        <p className="text-sm text-gray-600">{isEdit ? 'Update your listing details.' : 'Create a new surplus listing with key specs.'}</p>
-      </div>
+      {/* Removed page title and subtitle */}
       {loadingItem ? (
         <div className="text-sm text-gray-600"></div>
       ) : null}
