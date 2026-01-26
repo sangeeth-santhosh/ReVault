@@ -452,8 +452,8 @@ const Header = () => {
                   ? "Reports"
                   : location.pathname === "/inventory/add"
                     ? "Add Inventory"
-                    : location.pathname.startsWith("/inventory/my")
-                      ? "Update Inventory"
+                    : location.pathname.startsWith("/inventory/update")
+                      ? "Edit"
                       : "Explore";
 
   return (

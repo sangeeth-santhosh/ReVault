@@ -138,12 +138,22 @@ const Layout = () => {
 					<main className="flex-1 p-6 min-h-0 max-sm:p-4 flex flex-col">
 						<Header />
 						<div className="flex-1 min-h-0 overflow-y-auto relative">
-							<Outlet />
-							{showGlobalLoader ? (
-								<div className="absolute inset-0 flex items-center justify-center">
-									<PaperPlane className="" />
-								</div>
-							) : null}
+							{/* Loader overlay with smooth fade */}
+							<div
+								className={`absolute inset-0 flex items-center justify-center bg-white z-50 transition-opacity duration-500 ${
+									showGlobalLoader ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
+								}`}
+							>
+								<PaperPlane className="" />
+							</div>
+							{/* Page content with smooth fade */}
+							<div
+								className={`h-full transition-opacity duration-500 ${
+									showGlobalLoader ? 'opacity-0 pointer-events-none' : 'opacity-100 pointer-events-auto'
+								}`}
+							>
+								<Outlet />
+							</div>
 						</div>
 					</main>
 				</div>
