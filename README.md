@@ -1,106 +1,45 @@
 # ReVault
 
-Revolt is a full-stack web application that demonstrates a structured business-to-business inventory sharing system with role-based access and administrative approval workflows.  
-The focus is on clean architecture, predictable data flow, and practical full-stack fundamentals.
+ReVault is a full-stack web application for B2B inventory sharing with approval-based access, secure transactions, and direct business communication.
 
-Project Overview
+## Overview
+- Businesses register and require admin approval
+- Approved businesses can post and request inventory
+- Requests follow a controlled lifecycle
+- Direct B2B chat is available
+- Admin manages users, inventory, and transactions
 
-- Business users register and request approval before accessing the platform
-- Approved businesses can post inventory and receive requests
-- Requests move through a controlled lifecycle until completion
-- An admin interface manages users, inventory, and transactions
+## Core Features
+- Business registration with approval workflow
+- JWT-based authentication and role-based access
+- Inventory management with quantity, condition, expiry, images, and description
+- Inventory requests with owner approval or rejection
+- Automatic transaction creation and quantity updates
+- Direct business-to-business chat
+- Admin dashboard for system control and monitoring
+- Inventory and transaction reports
 
-Core Modules and Features
+## Tech Stack
+**Frontend:** React, Vite, React Router, Context API, Tailwind CSS  
+**Backend:** Node.js, Express.js (REST APIs)  
+**Database:** MongoDB, Mongoose  
 
-User & Business Module
-- Business registration with detailed profile information
-- Approval-based access control managed by admin
-- Account status handling (pending, approved, rejected, deactivated)
+## Security
+- JWT authentication
+- bcrypt password hashing
+- Protected routes and role-restricted APIs
+- Server-side validation
 
-Authentication Module
-- Secure login using token-based authentication
-- Role-based route protection for users and admin
-- Session persistence with controlled logout behavior
+## Architecture
+- Modular React frontend with protected dashboards
+- Separate admin interface
+- Backend with routes, controllers, models, and middleware
 
-Inventory Module
-- Inventory creation with quantity, condition, expiry, images, and description
-- Inventory editing and status management
-- Controlled visibility of active inventory items
+## Setup
+1. Clone the repository
+2. Install dependencies
+3. Configure environment variables
+4. Run frontend and backend
 
-Request & Transaction Module
-- Requesting inventory with specified quantities
-- Owner-side approval or rejection of requests
-- Transaction records created only on approval
-- Inventory quantity updated after completion
-
-Admin Module
-- Dashboard with system-level overview
-- Business approval and deactivation controls
-- Inventory monitoring across businesses
-- Transaction and report visibility
-
-Reporting Module
-- Inventory posted summary
-- Completed transactions overview
-- Quantity transfer records
-- Export-ready structured data
-
-Technology Stack
-
-Frontend
-- React
-- Vite
-- React Router
-- Context API
-- Tailwind CSS
-
-Backend
-- Node.js
-- Express.js
-- REST-based API architecture
-
-Database
-- MongoDB
-- Mongoose
-
-Authentication & Security
-
-- JWT-based authentication
-- Password hashing with bcrypt
-- Middleware-driven authorization
-- Role-restricted API endpoints
-- Server-side validation of critical actions
-
-High-Level Project Structure
-
-Frontend
-- Public pages for browsing and authentication
-- Protected user dashboard with modular pages
-- Dedicated admin interface with isolated layout
-- Centralized API and authentication handling
-
-Backend
-- Modular routes and controllers
-- Schema-based data models
-- Authentication and validation middleware
-- Clear separation of concerns
-
-Installation & Setup
-
-- Clone the repository
-- Install dependencies using npm
-- Run backend and frontend in development mode
-- Configure environment variables for local setup
-
-Purpose and Learning Outcomes
-
-- Building approval-based user workflows
-- Designing role-driven application architecture
-- Managing state across protected routes
-- Structuring scalable React and Node.js projects
-- Applying real-world authentication and authorization patterns
-
-Project Status
-
-Feature-complete for demonstration and evaluation.  
-Designed for further refinement, testing, and incremental improvements.
+## Status
+Fully functional and actively maintained.
