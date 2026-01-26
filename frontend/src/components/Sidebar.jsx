@@ -114,7 +114,7 @@ const Sidebar = () => {
   const navItems = [
     {
       href: "/requests/incoming",
-      label: "Incoming requests",
+      label: "Requests",
       dataSidebarNav: "Popular Products",
       svg: (
         <svg
