@@ -439,7 +439,7 @@ const Header = () => {
     location.pathname === "/dashboard"
       ? "Dashboard"
       : location.pathname === "/requests/incoming"
-        ? "Incoming Requests"
+        ? "Requests"
         : location.pathname === "/requests/my"
           ? "My Requests"
           : location.pathname === "/inventory/my"

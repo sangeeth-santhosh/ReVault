@@ -4,6 +4,7 @@ import chatService from '../../services/chatService.js';
 import requestService from '../../services/requestService.js';
 
 const Chats = () => {
+  // Only show threads where chat is allowed (accepted or completed)
   const [threads, setThreads] = useState([]);
   const [selectedId, setSelectedId] = useState('');
   const [searchParams, setSearchParams] = useSearchParams();
@@ -19,7 +20,8 @@ const Chats = () => {
     try {
       const [mine, incoming] = await Promise.all([requestService.getMine(), requestService.getIncoming()]);
       const combined = [...(mine?.data || []), ...(incoming?.data || [])];
-      setThreads(combined);
+      // Only keep accepted or completed threads
+      setThreads(combined.filter(t => ['accepted', 'completed'].includes(t.status)));
       const paramId = searchParams.get('requestId');
       const firstId = combined[0]?._id || combined[0]?.id || '';
       const nextId = paramId && combined.find((c) => (c._id || c.id) === paramId) ? paramId : firstId;

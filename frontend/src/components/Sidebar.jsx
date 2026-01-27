@@ -75,6 +75,17 @@ const Sidebar = () => {
     navigate(normalizePath(toPath), { replace: false });
   };
 
+  const lastRequests = (e, toPath) => {
+    if (!token) {
+      e.preventDefault();
+      showAccessToast();
+      return;
+    }
+    if (isModifiedClick(e)) return;
+    e.preventDefault();
+    navigate(normalizePath(toPath), { replace: false });
+  };
+
   useEffect(() => {
     let cancelled = false;
 
@@ -127,8 +138,8 @@ const Sidebar = () => {
             strokeLinecap="round"
             strokeLinejoin="round"
             strokeWidth="2"
-            d="M13 10V3L4 14h7v7l9-11h-7z"
-          ></path>
+            d="M4 4h16v2a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm0 6h16v10a2 2 0 01-2 2H6a2 2 0 01-2-2V10zm4 4h8"
+          />
         </svg>
       ),
     },
@@ -147,8 +158,8 @@ const Sidebar = () => {
             strokeLinecap="round"
             strokeLinejoin="round"
             strokeWidth="2"
-            d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"
-          ></path>
+            d="M8 10h.01M12 10h.01M16 10h.01M21 12c0 4.418-4.03 8-9 8a9.77 9.77 0 01-4-.8l-4 1 1-4A8.96 8.96 0 013 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"
+          />
         </svg>
       ),
     },
@@ -167,8 +178,8 @@ const Sidebar = () => {
             strokeLinecap="round"
             strokeLinejoin="round"
             strokeWidth="2"
-            d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"
-          ></path>
+            d="M17 9V7a5 5 0 00-10 0v2M5 12h14l-1.68 7.39A2 2 0 0115.36 21H8.64a2 2 0 01-1.96-1.61L5 12z"
+          />
         </svg>
       ),
     },
@@ -187,8 +198,8 @@ const Sidebar = () => {
             strokeLinecap="round"
             strokeLinejoin="round"
             strokeWidth="2"
-            d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"
-          ></path>
+            d="M3 17v-6a2 2 0 012-2h2a2 2 0 012 2v6m4 0v-4a2 2 0 012-2h2a2 2 0 012 2v4"
+          />
         </svg>
       ),
     },
@@ -295,10 +306,8 @@ const Sidebar = () => {
               </div>
             ))}
             <button
-              onClick={() => navigate("/requests/incoming")}
               className="text-xs font-medium text-gray-500 hover:underline focus:outline-none focus:underline"
-              tabIndex={0}
-              aria-label="See all requests"
+              onClick={(e) => lastRequests(e)}
             >
               See all
             </button>

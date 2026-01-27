@@ -17,7 +17,9 @@ export const getAllCompletedTransactionsAdmin = async (_req, res) => {
 export const getMyTransactions = async (req, res) => {
   try {
     const data = await Transaction.find({ buyer: req.user._id })
-      .populate({ path: 'request', populate: { path: 'inventory', select: 'title name' } })
+      .populate({ path: 'request', populate: { path: 'inventory', select: 'title name unit' } })
+      .populate('buyer', 'name businessName')
+      .populate('seller', 'name businessName')
       .sort({ createdAt: -1 });
     return res.json({ success: true, data });
   } catch (err) {
@@ -29,7 +31,9 @@ export const getMyTransactions = async (req, res) => {
 export const getSellerTransactions = async (req, res) => {
   try {
     const data = await Transaction.find({ seller: req.user._id })
-      .populate({ path: 'request', populate: { path: 'inventory', select: 'title name' } })
+      .populate({ path: 'request', populate: { path: 'inventory', select: 'title name unit' } })
+      .populate('buyer', 'name businessName')
+      .populate('seller', 'name businessName')
       .sort({ createdAt: -1 });
     return res.json({ success: true, data });
   } catch (err) {
