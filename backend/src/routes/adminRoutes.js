@@ -16,6 +16,7 @@ import {
 	downloadQuantityTransferredCsvAdmin,
 	downloadQuantityTransferredPdfAdmin,
 } from '../controllers/reportController.js';
+import { adminDeleteInventory } from '../controllers/inventoryController.js';
 import { getAdminNotifications, markNotificationRead } from '../controllers/notificationController.js';
 import { getAdminDashboard } from '../controllers/adminDashboardController.js';
 import { adminMiddleware } from '../middleware/adminMiddleware.js';
@@ -32,6 +33,7 @@ router.put('/users/deactivate/:id', deactivateUser);
 
 // Admin audit (read-only)
 router.get('/transactions', getAllCompletedTransactionsAdmin);
+router.delete('/inventory/:id', adminDeleteInventory);
 
 // Admin reports (download only)
 router.get('/reports/inventory/csv', downloadInventoryPostedCsvAdmin);

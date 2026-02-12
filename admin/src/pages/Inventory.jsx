@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { X } from "lucide-react";
 import apiClient from "../services/apiClient.js";
 
 export default function Inventory() {
@@ -33,6 +34,17 @@ export default function Inventory() {
     }
   };
 
+  const removeInventory = async (id) => {
+    if (!id) return;
+    setError("");
+    try {
+      await apiClient.delete(`/admin/inventory/${id}`);
+      await load();
+    } catch (err) {
+      setError(err?.message || "Could not delete inventory");
+    }
+  };
+
   useEffect(() => {
     load();
   }, []);
@@ -57,14 +69,17 @@ export default function Inventory() {
       {error ? <p className="text-sm text-red-400 mt-4">{error}</p> : null}
 
       <div className="mt-6 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-xl overflow-hidden">
-        <div className="grid grid-cols-12 gap-4 px-6 py-4 text-xs text-white/60 border-b border-white/10">
+        <div className="grid grid-cols-12 gap-x-[5px] px-6 py-4 text-xs text-white/60 border-b border-white/10">
           <div className="col-span-3">Item Name</div>
           <div className="col-span-2">Category</div>
           <div className="col-span-2">Quantity</div>
-          <div className="col-span-2">Condition</div>
-          <div className="col-span-1">Expiry</div>
-          <div className="col-span-1">Status</div>
-          <div className="col-span-1">Business</div>
+          <div className="col-span-2 pr-0">Condition</div>
+          <div className="col-span-1 pl-0">Expiry</div>
+          <div className="col-span-1 pl-4">Status</div>
+          <div className="col-span-1 pl-4 flex items-center justify-between gap-4">
+            <span>Business</span>
+            <span>Remove</span>
+          </div>
         </div>
 
         {loading ? (
@@ -82,18 +97,29 @@ export default function Inventory() {
             const displayStatus = qty === 0 ? "transferred" : (inv?.status || "available");
 
             return (
-              <div key={id} className="grid grid-cols-12 gap-4 px-6 py-4 items-center border-b border-white/10 last:border-b-0">
+              <div key={id} className="grid grid-cols-12 gap-x-[5px] px-6 py-4 items-center border-b border-white/10 last:border-b-0">
                 <div className="col-span-3 text-sm">{name}</div>
                 <div className="col-span-2 text-sm text-white/70">{inv?.category || "—"}</div>
                 <div className="col-span-2 text-sm text-white/70">{qty} {unit}</div>
-                <div className="col-span-2 text-sm text-white/70">{inv?.condition || "—"}</div>
-                <div className="col-span-1 text-sm text-white/70">{formatDate(expiry)}</div>
-                <div className="col-span-1">
+                <div className="col-span-2 pr-0 text-sm text-white/70">{inv?.condition || "—"}</div>
+                <div className="col-span-1 pl-0 text-sm text-white/70">{formatDate(expiry)}</div>
+                <div className="col-span-1 pl-4">
                   <span className="inline-flex items-center px-2 py-1 rounded-lg bg-white/10 text-xs text-white/70">
                     {displayStatus}
                   </span>
                 </div>
-                <div className="col-span-1 text-sm text-white/70">{business}</div>
+                <div className="col-span-1 pl-4 flex items-center justify-between gap-4 text-sm text-white/70">
+                  <span className="truncate">{business}</span>
+                  <button
+                    type="button"
+                    onClick={() => removeInventory(id)}
+                    aria-label="Delete inventory"
+                    title="Delete inventory"
+                    className="h-6 w-6 rounded-md bg-red-500/15 border border-red-400/30 text-red-400 hover:bg-red-500/25 flex items-center justify-center shrink-0"
+                  >
+                    <X size={12} />
+                  </button>
+                </div>
               </div>
             );
           })

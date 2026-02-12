@@ -81,9 +81,9 @@ const Sidebar = () => {
       showAccessToast();
       return;
     }
-    if (isModifiedClick(e)) return;
-    e.preventDefault();
-    navigate(normalizePath(toPath), { replace: false });
+    if (token) {
+      navigate("/requests/incoming", { replace: false });
+    }
   };
 
   useEffect(() => {

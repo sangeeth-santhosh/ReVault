@@ -225,6 +225,20 @@ export const deleteInventory = async (req, res) => {
   }
 };
 
+export const adminDeleteInventory = async (req, res) => {
+  try {
+    const item = await Inventory.findById(req.params.id);
+    if (!item) {
+      return res.status(404).json({ success: false, message: 'Item not found' });
+    }
+    await item.deleteOne();
+    return res.json({ success: true, message: 'Item deleted' });
+  } catch (err) {
+    console.error('adminDeleteInventory error', err);
+    return res.status(500).json({ success: false, message: 'Could not delete item' });
+  }
+};
+
 export default {
   addInventory,
   getAllInventory,
@@ -232,4 +246,5 @@ export default {
   getMyInventory,
   updateInventory,
   deleteInventory,
+  adminDeleteInventory,
 };

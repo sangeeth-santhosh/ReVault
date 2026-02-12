@@ -8,6 +8,7 @@
     "start": "node src/server.js",
     "dev": "nodemon src/server.js",
     "seed:admin": "node src/scripts/seedAdmin.js",
+    "seed:unused-item": "node src/scripts/seedUnusedItem.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
