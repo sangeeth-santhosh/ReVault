@@ -52,12 +52,12 @@
 1. **Repository Initialization**
 `git clone https://github.com/username/revault.git`
 2. **Dependency Installation**
-`cd backend && npm install`
-`cd ../admin && npm install`
+`cd backend && pnpm install`
+`cd ../admin && pnpm install`
 3. **Environment Configuration**
 Set `MONGO_URI`, `JWT_SECRET`, and `PORT` in your `.env` file.
 4. **Launch System**
-Execute `npm start` in both directories to initialize the ecosystem.
+Execute `pnpm dev` in both directories to initialize the ecosystem.
 
 ---
 
