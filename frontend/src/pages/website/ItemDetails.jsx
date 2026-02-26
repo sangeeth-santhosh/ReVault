@@ -231,11 +231,11 @@ const ItemDetails = () => {
                   {/* Bottom */}
                   <div className="space-y-3">
                     {availableQty === 0 ? (
-                      <p className="text-sm -mt-20 text-amber-700">
+                      <p className="text-sm text-amber-700">
                         This item is currently unavailable
                       </p>
                     ) : isOwner ? (
-                      <p className="text-sm -mt-20 text-blue-700 border border-blue-200 rounded-xl px-3 py-2 max-w-[243px]">
+                      <p className="text-sm text-blue-700 border border-blue-200 rounded-xl px-3 py-2 max-w-[243px]">
                         You are the owner of this inventory
                       </p>
                     ) : !user ? (
@@ -246,7 +246,7 @@ const ItemDetails = () => {
                         Login to Request
                       </Link>
                     ) : (
-                      <form onSubmit={handleRequest} className="space-y-3">
+                      <form onSubmit={handleRequest} className="space-y-3 mt-2">
                         <div>
                           <label className="text-xs font-medium text-gray-600">
                             Request Quantity
